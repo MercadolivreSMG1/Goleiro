@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Validador Goleiro · SMG1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0B1733; --navy-2:#14213D;
+  --ink:#EAF0FF; --mute:#8FA3C8;
+  --ok:#00A650; --ok-d:#007A3B;
+  --no:#F23D4F; --no-d:#B51F2E;
+  --warn:#FF8C00; --dup:#3483FA; --ml:#FFE600;
+  --line:rgba(255,255,255,.12);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none}
+body{background:var(--navy);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;position:fixed;inset:0}
+.mono{font-family:"Space Grotesk",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+button{font-family:inherit;cursor:pointer}
+.screen{position:fixed;inset:0;z-index:1;display:none;flex-direction:column}
+.screen.on{display:flex}
+
+/* ---------- BIPAGEM ---------- */
+#verdict{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:16px;text-align:center;position:relative;transition:background .18s ease;background:linear-gradient(175deg,var(--navy-2),var(--navy))}
+#verdict.ok{background:linear-gradient(175deg,var(--ok),var(--ok-d))}
+#verdict.no{background:linear-gradient(175deg,var(--no),var(--no-d))}
+#verdict.nf{background:linear-gradient(175deg,var(--warn),#A85A00)}
+#verdict.dup{background:linear-gradient(175deg,#2B3C63,#1A2646)}
+#verdict.flash{animation:pop .28s ease}
+@keyframes pop{0%{transform:scale(.975);opacity:.55}100%{transform:scale(1);opacity:1}}
+#vLabel{font-family:"Space Grotesk",sans-serif;font-weight:700;letter-spacing:-1.2px;line-height:.92;font-size:clamp(34px,11.5vw,78px);margin:0;text-shadow:0 3px 18px rgba(0,0,0,.28)}
+#vId{font-family:"Space Grotesk",sans-serif;font-size:clamp(17px,5.2vw,30px);font-weight:500;margin:12px 0 0;opacity:.95;word-break:break-all}
+#vMeta{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+#vMeta .chip{background:rgba(0,0,0,.26);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:6px 13px;font-size:13.5px;font-weight:600}
+#alert{margin-top:16px;width:100%;max-width:640px;border-radius:14px;padding:14px 10px;background:#000;color:#FFE600;border:3px solid #FFE600;display:none;animation:blink 1s steps(1,end) infinite}
+#alert.on{display:block}
+#alert .big{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:clamp(26px,8.6vw,54px);line-height:1;letter-spacing:-1px}
+#alert .small{font-size:13px;margin-top:6px;color:#fff;font-weight:600}
+@keyframes blink{0%,55%{opacity:1}56%,100%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){#alert,#verdict.flash,.dot.load{animation:none}}
+#sync{position:absolute;top:8px;right:11px;font-size:11px;color:rgba(255,255,255,.62);font-family:"Space Grotesk",sans-serif}
+#typed{position:absolute;top:8px;left:50%;transform:translateX(-50%);font-family:"Space Grotesk",sans-serif;font-size:13px;letter-spacing:2px;color:rgba(255,255,255,.55);min-height:16px}
+#bar{display:flex;gap:1px;background:var(--line);border-top:1px solid var(--line)}
+#bar .kpi{flex:1;background:var(--navy);padding:9px 4px;text-align:center}
+#bar .kpi b{font-family:"Space Grotesk",sans-serif;font-size:20px;display:block;line-height:1.05}
+#bar .kpi span{font-size:10px;color:var(--mute)}
+.kpi.g b{color:#4ED88B}.kpi.r b{color:#FF7B87}.kpi.a b{color:#FFB055}
+#log{height:27vh;min-height:110px;overflow-y:auto;background:var(--navy);border-top:1px solid var(--line)}
+#log .item{display:flex;align-items:center;gap:10px;padding:9px 13px;border-bottom:1px solid rgba(255,255,255,.06)}
+#log .id{font-family:"Space Grotesk",sans-serif;font-size:14px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#log .pr{font-size:11.5px;color:var(--mute);font-family:"Space Grotesk",sans-serif}
+#log .empty{padding:22px;text-align:center;color:var(--mute);font-size:13px}
+.dot{width:9px;height:9px;border-radius:50%;flex:none;background:#5A6B8C}
+.dot.ok{background:var(--ok)}.dot.err{background:var(--no)}.dot.load{background:var(--ml);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.25}}
+#tools{display:flex;gap:7px;padding:8px 10px;background:var(--navy);border-top:1px solid var(--line)}
+#tools .btn{flex:1;padding:10px 3px;font-size:11.5px;text-align:center}
+.btn{border:1px solid var(--line);border-radius:11px;padding:11px 15px;font-size:13.5px;font-weight:600;background:rgba(255,255,255,.1);color:var(--ink);transition:transform .12s ease}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--ml);color:#0B1733;border-color:transparent}
+.btn.ghost{background:transparent}
+.btn.wide{flex:1;min-width:130px;text-align:center}
+
+/* ---------- AJUSTES ---------- */
+#cfg{overflow-y:auto;padding:16px;gap:13px;background:var(--navy);-webkit-overflow-scrolling:touch}
+.head{display:flex;align-items:center;gap:12px}
+.badge{background:var(--ml);color:#0B1733;font-weight:700;font-size:12px;padding:5px 10px;border-radius:8px}
+h1{font-family:"Space Grotesk",sans-serif;font-size:21px;margin:0;font-weight:600;letter-spacing:-.4px}
+.sub{color:var(--mute);font-size:13px;margin:2px 0 0}
+.card{background:rgba(255,255,255,.055);border:1px solid var(--line);border-radius:16px;padding:14px}
+.card h2{font-family:"Space Grotesk",sans-serif;font-size:15px;margin:0 0 8px;font-weight:600}
+.card p.hint{color:var(--mute);font-size:12.5px;margin:0 0 10px;line-height:1.45}
+.line{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px}
+.line:last-child{border-bottom:0}
+.line .nm{flex:1}
+.line .st{font-size:12px;color:var(--mute);font-family:"Space Grotesk",sans-serif}
+.stat{display:flex;gap:18px;margin-top:11px;flex-wrap:wrap}
+.stat b{font-family:"Space Grotesk",sans-serif;font-size:19px;display:block;line-height:1.1}
+.stat span{font-size:11px;color:var(--mute)}
+input[type=text]{width:100%;background:rgba(0,0,0,.34);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 11px;font-size:12.5px;font-family:"Space Grotesk",ui-monospace,monospace}
+input:focus{outline:2px solid var(--dup);outline-offset:1px}
+.map{display:grid;grid-template-columns:repeat(auto-fit,minmax(74px,1fr));gap:8px;margin-top:9px}
+.map label{display:block;font-size:11px;color:var(--mute);margin-bottom:4px}
+.map input{text-align:center;text-transform:uppercase}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
+.switch{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--mute);margin-top:9px}
+.switch input{width:19px;height:19px;accent-color:var(--ml)}
+.err{margin-top:10px;background:rgba(242,61,79,.13);border:1px solid rgba(242,61,79,.45);border-radius:11px;padding:11px 12px;font-size:12.5px;line-height:1.5;display:none}
+.err.on{display:block}
+details summary{color:var(--mute);font-size:12.5px;cursor:pointer;margin-top:6px}
+.modal{position:fixed;inset:0;z-index:20;background:rgba(5,11,25,.86);display:none;align-items:center;justify-content:center;padding:18px}
+.modal.on{display:flex}
+.modal .box{background:var(--navy-2);border:1px solid var(--line);border-radius:16px;padding:18px;max-width:360px;width:100%}
+.modal h3{margin:0 0 8px;font-family:"Space Grotesk",sans-serif;font-size:17px}
+.modal p{color:var(--mute);font-size:13.5px;line-height:1.5;margin:0 0 14px}
+</style>
+</head>
+<body>
+
+<section id="scan" class="screen on">
+  <div id="verdict">
+    <div id="typed"></div>
+    <div id="sync">iniciando…</div>
+    <h2 id="vLabel">Carregando base</h2>
+    <p id="vId">Buscando a planilha</p>
+    <div id="vMeta"></div>
+    <div id="alert"><div class="big" id="alertTxt"></div><div class="small" id="alertSub"></div></div>
+  </div>
+  <div id="bar">
+    <div class="kpi"><b id="kTot" class="mono">0</b><span>bipados</span></div>
+    <div class="kpi g"><b id="kOk" class="mono">0</b><span>roteirizados</span></div>
+    <div class="kpi r"><b id="kNo" class="mono">0</b><span>não rot.</span></div>
+    <div class="kpi a"><b id="kNf" class="mono">0</b><span>fora da base</span></div>
+  </div>
+  <div id="log"><div class="empty">As leituras aparecem aqui.</div></div>
+  <div id="tools">
+    <button class="btn" id="btnRefresh">Atualizar</button>
+    <button class="btn" id="btnExport">Exportar</button>
+    <button class="btn" id="btnClear">Zerar</button>
+    <button class="btn" id="btnType">Digitar</button>
+    <button class="btn" id="btnCfg">Ajustes</button>
+  </div>
+</section>
+
+<section id="cfg" class="screen">
+  <div class="head">
+    <span class="badge">SMG1</span>
+    <div><h1>Ajustes</h1><p class="sub">Validador do goleiro</p></div>
+  </div>
+
+  <div class="card">
+    <h2>Planilha</h2>
+    <div class="line"><div class="dot" id="dRot"></div><div class="nm">roteirizados</div><div class="st" id="sRot">—</div></div>
+    <div class="line"><div class="dot" id="dBase"></div><div class="nm">Base Torre</div><div class="st" id="sBase">—</div></div>
+    <div class="stat">
+      <div><b id="stRot" class="mono">0</b><span>roteirizados</span></div>
+      <div><b id="stBase" class="mono">0</b><span>na base</span></div>
+      <div><b id="stPro" class="mono">0</b><span>com promessa</span></div>
+    </div>
+    <div class="row"><button class="btn wide primary" id="btnSync">Sincronizar agora</button></div>
+    <div class="err" id="errBox"></div>
+  </div>
+
+  <div class="card">
+    <h2>Leitura</h2>
+    <label class="switch"><input type="checkbox" id="optSound" checked> Bipe sonoro e vibração</label>
+    <label class="switch"><input type="checkbox" id="optAutoSync" checked> Ressincronizar a cada 5 min</label>
+  </div>
+
+  <div class="card">
+    <details>
+      <summary>Origem dos dados</summary>
+      <p class="hint" style="margin-top:10px">As colunas são reconhecidas pelo cabeçalho a cada sincronização, então mudar a planilha de lugar não quebra a leitura. Deixe as letras em <b>auto</b>; só preencha se quiser forçar.</p>
+      <input type="text" id="url" spellcheck="false">
+      <div class="map">
+        <div><label>Aba rot.</label><input type="text" id="shRot" value="roteirizados" style="text-transform:none"></div>
+        <div><label>Aba base</label><input type="text" id="shBase" value="Base Torre" style="text-transform:none"></div>
+      </div>
+      <div class="map">
+        <div><label>ID</label><input type="text" id="cId" value="auto"></div>
+        <div><label>Promessa</label><input type="text" id="cPr" value="auto"></div>
+        <div><label>Ciclo</label><input type="text" id="cSt" value="auto"></div>
+      </div>
+      <div class="line" style="margin-top:10px"><div class="nm">colunas em uso</div><div class="st" id="detected">—</div></div>
+    </details>
+  </div>
+
+  <div class="row" style="padding-bottom:10px">
+    <button class="btn wide primary" id="btnBack">Voltar para a leitura</button>
+  </div>
+</section>
+
+<div class="modal" id="typeModal">
+  <div class="box">
+    <h3>Digitar o ID</h3>
+    <input type="text" id="typeIn" style="margin-bottom:4px" inputmode="numeric" placeholder="47949605866">
+    <div class="row">
+      <button class="btn wide primary" id="typeGo">Validar</button>
+      <button class="btn wide ghost" id="typeNo">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="box">
+    <h3 id="mTitle"></h3><p id="mText"></p>
+    <div class="row">
+      <button class="btn wide primary" id="mYes">Confirmar</button>
+      <button class="btn wide ghost" id="mNo">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SHEET_URL = "https://docs.google.com/spreadsheets/d/1ZXh-hpVG2TVVKIeDlzfa3BmewNm0B73z77EQLMijmd4/edit";
+const $ = s => document.querySelector(s);
+
+let ROT = new Map(), BASE = new Map(), SCANNED = new Map();
+let counts = {tot:0, ok:0, no:0, nf:0};
+let lastSync = null, syncTimer = null, syncing = false;
+
+const norm = v => String(v==null?"":v).trim().toUpperCase().replace(/\s+/g,"").replace(/^["']|["']$/g,"");
+const todayISO = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
+
+/* promessa: sempre a ÚLTIMA data do texto. aceita 2026-08-25 e 25-08-2026 */
+function lastDate(txt){
+  const s = String(txt==null?"":txt);
+  const iso = s.match(/\d{4}-\d{2}-\d{2}/g);
+  if(iso) return iso[iso.length-1];
+  const br = s.match(/\d{2}[-\/]\d{2}[-\/]\d{4}/g);
+  if(br){ const p = br[br.length-1].split(/[-\/]/); return `${p[2]}-${p[1]}-${p[0]}`; }
+  return "";
+}
+const promiseState = iso => !iso ? "none" : (iso === todayISO() ? "today" : (iso < todayISO() ? "late" : "future"));
+const fmtBR = iso => { if(!iso) return ""; const p = iso.split("-"); return `${p[2]}/${p[1]}/${p[0]}`; };
+const daysLate = iso => Math.round((new Date(todayISO()+"T00:00:00") - new Date(iso+"T00:00:00"))/86400000);
+
+function parseCSV(text){
+  const rows = []; let row = [], cell = "", q = false;
+  for(let i = 0; i < text.length; i++){
+    const c = text[i];
+    if(q){
+      if(c === '"'){ if(text[i+1] === '"'){ cell += '"'; i++; } else q = false; }
+      else cell += c;
+    }else{
+      if(c === '"') q = true;
+      else if(c === ","){ row.push(cell); cell = ""; }
+      else if(c === "\n"){ row.push(cell); rows.push(row); row = []; cell = ""; }
+      else if(c !== "\r") cell += c;
+    }
+  }
+  if(cell !== "" || row.length){ row.push(cell); rows.push(row); }
+  return rows;
+}
+const sheetId = u => { const m = String(u).match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/); return m ? m[1] : String(u).trim(); };
+const colIdx = L => { L = String(L).trim().toUpperCase(); let n = 0; for(const c of L) n = n*26 + (c.charCodeAt(0)-64); return n-1; };
+
+const LT = i => { let n = i + 1, r = ""; while(n > 0){ const m = (n - 1) % 26; r = String.fromCharCode(65 + m) + r; n = Math.floor((n - 1) / 26); } return r; };
+
+async function fetchCsv(id, sheet, tq){
+  const base = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq`;
+  let url = `${base}?tqx=out:csv&headers=0&sheet=${encodeURIComponent(sheet)}&cb=${Date.now()}`;
+  if(tq) url += `&tq=${encodeURIComponent(tq)}`;
+  let r;
+  try{ r = await fetch(url, {credentials:"omit", cache:"no-store"}); }
+  catch(e){ throw new Error("bloqueado pelo navegador — confira se a planilha está pública"); }
+  if(!r.ok) throw new Error(r.status === 401 || r.status === 403 ? "planilha não está pública" : `HTTP ${r.status}`);
+  const t = await r.text();
+  if(/^\s*</.test(t)) throw new Error("veio a tela de login");
+  if(/^\s*\{/.test(t) || /Invalid query/i.test(t)) throw new Error("consulta recusada");
+  return parseCSV(t);
+}
+
+/* acha ID, promessa e ciclo pelo cabeçalho — sobrevive a colunas novas na planilha */
+function findCols(rows){
+  const head = (rows[0] || []).map(h => String(h).trim().toLowerCase());
+  const body = rows.slice(1);
+  const width = Math.max(head.length, ...body.map(r => r.length), 1);
+  const val = i => { for(const r of body){ const v = String(r[i] == null ? "" : r[i]).trim(); if(v) return v; } return ""; };
+  const byHead = re => head.findIndex(h => h && re.test(h));
+  const byVal  = re => { for(let i = 0; i < width; i++) if(re.test(val(i))) return i; return -1; };
+
+  let id = head.findIndex(h => h === "id");
+  if(id < 0){ for(let i = 0; i < width; i++) if(!head[i] && /^\d{8,}$/.test(val(i))){ id = i; break; } }
+  if(id < 0) id = byVal(/^\d{8,}$/);
+
+  let pr = byHead(/promise_date/);
+  if(pr < 0) pr = byHead(/promise|promes/);
+  if(pr < 0) pr = byVal(/^\d{4}-\d{2}-\d{2}\s*-\s*\d{4}-\d{2}-\d{2}/);
+
+  let st = head.findIndex(h => h === "ciclo_final_atualizado");
+  if(st < 0) st = byHead(/^ciclo/);
+
+  const man = (el, cur) => { const v = String($(el).value || "").trim().toUpperCase(); return /^[A-Z]{1,2}$/.test(v) ? colIdx(v) : cur; };
+  return {id: man("#cId", id), pr: man("#cPr", pr), st: man("#cSt", st)};
+}
+
+/* baixa só as colunas detectadas: a Base Torre inteira são 18 MB, assim fica ~1 MB */
+async function loadSheet(id, sheet){
+  let c, rows;
+  try{
+    c = findCols(await fetchCsv(id, sheet, "select * limit 4"));
+    if(c.id < 0) throw new Error("não achei a coluna de ID");
+    const letters = [c.id, c.pr, c.st].filter(i => i >= 0).map(LT);
+    rows = await fetchCsv(id, sheet, "select " + letters.join(","));
+    let k = 0;
+    const ix = {id: k++, pr: c.pr >= 0 ? k++ : -1, st: c.st >= 0 ? k++ : -1};
+    return {rows, ix, label: `${sheet}: ID ${LT(c.id)}${c.pr >= 0 ? " · promessa " + LT(c.pr) : ""}${c.st >= 0 ? " · ciclo " + LT(c.st) : ""}`};
+  }catch(e){
+    rows = await fetchCsv(id, sheet, null);            // sem query: usa a planilha toda
+    c = findCols(rows.slice(0, 5));
+    if(c.id < 0) throw new Error("não achei a coluna de ID");
+    return {rows, ix: c, label: `${sheet}: ID ${LT(c.id)} (leitura completa)`};
+  }
+}
+
+function setLine(w, state, txt){
+  $(w === "rot" ? "#dRot" : "#dBase").className = "dot " + state;
+  $(w === "rot" ? "#sRot" : "#sBase").textContent = txt;
+}
+function showErr(m){
+  const b = $("#errBox");
+  if(!m){ b.classList.remove("on"); return; }
+  b.innerHTML = `<b>Falha ao ler a planilha:</b> ${m}<br>Confira se ela continua compartilhada como “qualquer pessoa com o link” e se os nomes das abas batem.`;
+  b.classList.add("on");
+}
+async function sync(silent){
+  if(syncing) return false;
+  syncing = true;
+  const id = sheetId($("#url").value || SHEET_URL);
+  if(!silent){ showErr(null); setLine("rot","load","buscando…"); setLine("base","load","buscando…"); }
+  if(!ROT.size && !BASE.size) $("#sync").textContent = "sincronizando…";
+  const problems = [], labels = [];
+  const jobs = [
+    {key:"rot",  sheet:$("#shRot").value.trim()  || "roteirizados"},
+    {key:"base", sheet:$("#shBase").value.trim() || "Base Torre"}
+  ];
+  for(const j of jobs){
+    try{
+      const {rows, ix, label} = await loadSheet(id, j.sheet);
+      const map = new Map();
+      for(const r of rows){
+        if(!r || !r.length) continue;
+        const v = norm(r[ix.id]);
+        if(!v || !/^[A-Z0-9][A-Z0-9\-_.]{5,}$/.test(v)) continue;
+        map.set(v, {
+          pr: ix.pr >= 0 ? lastDate(r[ix.pr]) : "",
+          st: ix.st >= 0 ? String(r[ix.st] == null ? "" : r[ix.st]).trim() : ""
+        });
+      }
+      if(!map.size) throw new Error("nenhum ID lido");
+      if(j.key === "rot") ROT = map; else BASE = map;
+      labels.push(label);
+      setLine(j.key, "ok", `${map.size} IDs`);
+    }catch(e){
+      problems.push(`${j.sheet}: ${e.message}`);
+      setLine(j.key, "err", "falhou");
+    }
+  }
+  $("#detected").textContent = labels.length ? labels.join("  |  ") : "—";
+  refresh(); cacheSave();
+  if(problems.length){ if(!silent) showErr(problems.join(" · ")); }
+  else { lastSync = new Date(); showErr(null); }
+  paintSync();
+  if(!SCANNED.size && (ROT.size || BASE.size)) idleScreen();
+  syncing = false;
+  return !problems.length;
+}
+function paintSync(){
+  $("#sync").textContent = lastSync
+    ? `base ${lastSync.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}`
+    : (ROT.size || BASE.size ? "base em cache" : "sem base");
+}
+function refresh(){
+  $("#stRot").textContent = ROT.size;
+  $("#stBase").textContent = BASE.size;
+  $("#stPro").textContent = [...BASE.values()].filter(v => v.pr).length;
+}
+function idleScreen(){
+  if(SCANNED.size) return;
+  $("#verdict").className = "";
+  $("#vLabel").textContent = "Bipe o pacote";
+  $("#vId").textContent = `${ROT.size} roteirizados carregados`;
+  $("#vMeta").innerHTML = ""; $("#alert").classList.remove("on");
+}
+
+/* cache local */
+const store = {
+  async set(k,v){ try{ if(window.storage) return await window.storage.set(k,v); }catch(e){} try{ localStorage.setItem(k,v); }catch(e){} },
+  async get(k){ try{ if(window.storage){ const r = await window.storage.get(k); return r?r.value:null; } }catch(e){} try{ return localStorage.getItem(k); }catch(e){ return null; } }
+};
+const pack = m => [...m.entries()].map(([k,v]) => `${k}|${v.pr}|${v.st}`).join("\n");
+const unpack = s => { const m = new Map(); if(!s) return m;
+  for(const l of s.split("\n")){ const p = l.split("|"); if(p[0]) m.set(p[0], {pr:p[1]||"", st:p[2]||""}); } return m; };
+let cacheTimer = null;
+function cacheSave(){
+  clearTimeout(cacheTimer);
+  cacheTimer = setTimeout(() => {
+    store.set("goleiro4:cfg", JSON.stringify({
+      url:$("#url").value, shRot:$("#shRot").value, shBase:$("#shBase").value,
+      c:[$("#cId").value,$("#cPr").value,$("#cSt").value],
+      snd:$("#optSound").checked, asy:$("#optAutoSync").checked
+    }));
+    store.set("goleiro4:rot", pack(ROT));
+    store.set("goleiro4:base", pack(BASE));
+  }, 500);
+}
+(async function boot(){
+  try{
+    const c = JSON.parse(await store.get("goleiro4:cfg") || "{}");
+    if(c.url) $("#url").value = c.url;
+    if(c.shRot) $("#shRot").value = c.shRot;
+    if(c.shBase) $("#shBase").value = c.shBase;
+    if(c.c) ["#cId","#cPr","#cSt"].forEach((s,i) => { if(c.c[i]) $(s).value = c.c[i]; });
+    if(c.snd === false) $("#optSound").checked = false;
+    if(c.asy === false) $("#optAutoSync").checked = false;
+  }catch(e){}
+  if(!$("#url").value) $("#url").value = SHEET_URL;
+  const [r, b] = await Promise.all([store.get("goleiro4:rot"), store.get("goleiro4:base")]);
+  ROT = unpack(r); BASE = unpack(b);
+  if(ROT.size || BASE.size){
+    setLine("rot","ok",`${ROT.size} IDs em cache`); setLine("base","ok",`${BASE.size} IDs em cache`);
+    refresh(); idleScreen(); paintSync();
+  }
+  await sync(true);
+  startAutoSync();
+})();
+
+/* som */
+let actx = null;
+function beep(seq){
+  if(!$("#optSound").checked) return;
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    if(actx.state === "suspended") actx.resume();
+    let t = actx.currentTime;
+    seq.forEach(([f,d]) => {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type="square"; o.frequency.value=f;
+      g.gain.setValueAtTime(.0001,t);
+      g.gain.exponentialRampToValueAtTime(.22,t+.012);
+      g.gain.exponentialRampToValueAtTime(.0001,t+d);
+      o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t+d+.02); t += d+.045;
+    });
+  }catch(e){}
+}
+const buzz = p => { if($("#optSound").checked && navigator.vibrate) try{ navigator.vibrate(p); }catch(e){} };
+document.addEventListener("pointerdown", () => { try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); actx.resume(); }catch(e){} }, {once:true});
+
+/* ---------- leitura: captura global de teclado (funciona sem foco) ---------- */
+const verdict = $("#verdict");
+let buf = "", lastKey = 0, endTimer = null;
+
+/* extrai o ID de leituras cruas tipo:  ^id^Ç^47949605866^,^t^Ç^lm^{  */
+function extractId(raw){
+  if(!raw) return "";
+  const s = String(raw).replace(/[\u0000-\u001F]/g, " ").trim();
+  const tagged = s.match(/id["'^\u00C7\s]*[:=^\u00C7]+["'^\u00C7\s]*(\d{8,})/i);
+  if(tagged) return tagged[1];
+  const nums = s.match(/\d{8,}/g);
+  if(nums) return nums.slice().sort((a,b) => b.length - a.length)[0];
+  const clean = s.replace(/[^A-Za-z0-9\-_.]/g, "").toUpperCase();
+  return clean.length >= 5 ? clean : "";
+}
+
+function showTyped(){ $("#typed").textContent = buf ? buf.slice(-26) : ""; }
+function commit(){
+  clearTimeout(endTimer);
+  const raw = buf; buf = ""; showTyped();
+  const id = extractId(raw);
+  if(!id) return;
+  render(evaluate(id));
+}
+document.addEventListener("keydown", e => {
+  if($("#cfg").classList.contains("on")) return;
+  if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+  if(e.key === "Enter" || e.key === "Tab"){ e.preventDefault(); if(buf) commit(); return; }
+  if(e.key === "Backspace"){ buf = buf.slice(0, -1); showTyped(); return; }
+  if(e.key === "Dead" || e.key.length !== 1) return;
+  const now = Date.now();
+  if(now - lastKey > 600) buf = "";
+  lastKey = now;
+  buf += e.key;
+  showTyped();
+  clearTimeout(endTimer);
+  endTimer = setTimeout(() => { if((buf.match(/\d/g) || []).length >= 8) commit(); }, 220);
+}, true);
+
+/* digitação manual */
+$("#btnType").onclick = () => { $("#typeModal").classList.add("on"); const i = $("#typeIn"); i.value = ""; setTimeout(() => i.focus(), 60); };
+$("#typeNo").onclick = () => $("#typeModal").classList.remove("on");
+$("#typeGo").onclick = () => { const id = extractId($("#typeIn").value); $("#typeModal").classList.remove("on"); if(id) render(evaluate(id)); };
+$("#typeIn").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); $("#typeGo").click(); } });
+
+function evaluate(id){
+  const b = BASE.get(id), r = ROT.get(id);
+  const routed = !!r, dup = SCANNED.has(id);
+  const pr = (b && b.pr) ? b.pr : (r ? r.pr : "");
+  const st = (b && b.st) ? b.st : (r ? r.st : "");
+  return {id, kind: routed ? "ok" : (b ? "no" : "nf"), dup, routed, pr, st, ps: promiseState(pr), at:new Date()};
+}
+function render(r){
+  if(!r.dup){ counts.tot++; counts[r.kind]++; SCANNED.set(r.id, r); addLog(r); }
+  verdict.className = r.dup ? "dup" : r.kind;
+  void verdict.offsetWidth; verdict.classList.add("flash");
+  $("#vLabel").textContent = r.dup ? "JÁ BIPADO" : r.kind === "ok" ? "ROTEIRIZADO" : r.kind === "nf" ? "FORA DA BASE" : "NÃO ROTEIRIZADO";
+  $("#vId").textContent = r.id;
+  const meta = $("#vMeta"); meta.innerHTML = "";
+  const chip = t => { const d = document.createElement("div"); d.className="chip"; d.textContent=t; meta.appendChild(d); };
+  chip(r.pr ? `Promessa ${fmtBR(r.pr)}` : "Sem promessa na base");
+  if(r.st) chip(`Ciclo ${r.st}`);
+  if(r.dup) chip(`1ª às ${SCANNED.get(r.id).at.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}`);
+  const al = $("#alert");
+  if(!r.routed && (r.ps === "today" || r.ps === "late")){
+    al.classList.add("on");
+    $("#alertTxt").textContent = r.ps === "today" ? "PROMESSA DE HOJE" : "PROMESSA VENCIDA";
+    $("#alertSub").textContent = r.ps === "today"
+      ? `Prometido para ${fmtBR(r.pr)} — precisa sair hoje`
+      : `Venceu em ${fmtBR(r.pr)} — ${daysLate(r.pr)} dia(s) de atraso`;
+    beep([[300,.16],[300,.16],[300,.16],[240,.3]]); buzz([90,70,90,70,220]);
+  }else{
+    al.classList.remove("on");
+    if(r.dup){ beep([[520,.07],[520,.07]]); buzz(35); }
+    else if(r.kind === "ok"){ beep([[1180,.09]]); buzz(28); }
+    else if(r.kind === "nf"){ beep([[620,.12],[470,.16]]); buzz([60,50,60]); }
+    else { beep([[330,.15],[280,.22]]); buzz([80,60,140]); }
+  }
+  updateKPI();
+}
+function updateKPI(){ $("#kTot").textContent=counts.tot; $("#kOk").textContent=counts.ok; $("#kNo").textContent=counts.no; $("#kNf").textContent=counts.nf; }
+function addLog(r){
+  const log = $("#log"); const e = log.querySelector(".empty"); if(e) e.remove();
+  const color = r.kind==="ok" ? "var(--ok)" : r.kind==="no" ? "var(--no)" : "var(--warn)";
+  const el = document.createElement("div"); el.className = "item";
+  el.innerHTML = `<div class="dot" style="background:${color}"></div><div class="id">${r.id}</div><div class="pr">${r.pr?fmtBR(r.pr):"—"}</div>`;
+  log.prepend(el);
+  while(log.children.length > 200) log.lastChild.remove();
+}
+function flashMsg(t){ $("#sync").textContent = t; setTimeout(paintSync, 2200); }
+
+/* ações */
+function startAutoSync(){
+  clearInterval(syncTimer);
+  syncTimer = setInterval(() => { if($("#optAutoSync").checked) sync(true); }, 300000);
+}
+$("#btnRefresh").onclick = async () => { flashMsg("atualizando…"); const ok = await sync(true); flashMsg(ok ? "base atualizada" : "falha ao atualizar"); };
+$("#btnSync").onclick = () => sync(false);
+$("#btnCfg").onclick = () => { $("#scan").classList.remove("on"); $("#cfg").classList.add("on"); };
+$("#btnBack").onclick = () => { cacheSave(); $("#cfg").classList.remove("on"); $("#scan").classList.add("on"); };
+
+let pending = null;
+function ask(t, x, fn){ $("#mTitle").textContent=t; $("#mText").textContent=x; pending=fn; $("#modal").classList.add("on"); }
+$("#mNo").onclick = () => { $("#modal").classList.remove("on"); pending=null; };
+$("#mYes").onclick = () => { $("#modal").classList.remove("on"); if(pending) pending(); pending=null; };
+$("#btnClear").onclick = () => ask("Zerar contagem","Apaga as leituras desta conferência. A base da planilha continua.",() => {
+  SCANNED.clear(); counts = {tot:0,ok:0,no:0,nf:0}; updateKPI();
+  $("#log").innerHTML = '<div class="empty">As leituras aparecem aqui.</div>';
+  idleScreen();
+});
+$("#btnExport").onclick = () => {
+  if(!SCANNED.size) return flashMsg("nada para exportar");
+  const map = {today:"hoje", late:"vencida", future:"futura", none:"sem promessa"};
+  const lines = [...SCANNED.values()].map(r => [
+    r.id,
+    r.kind === "ok" ? "ROTEIRIZADO" : r.kind === "nf" ? "FORA DA BASE" : "NAO ROTEIRIZADO",
+    (r.st||"").replace(/;/g," "), fmtBR(r.pr), map[r.ps], r.at.toLocaleString("pt-BR")
+  ].join(";"));
+  const blob = new Blob(["\uFEFF" + "id;resultado;ciclo;promessa;situacao_promessa;bipado_em\n" + lines.join("\n")], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+  a.download = `conferencia-goleiro-${todayISO()}.csv`; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+};
+["#optSound","#optAutoSync","#url","#shRot","#shBase","#cId","#cPr","#cSt"]
+  .forEach(s => $(s).addEventListener("change", cacheSave));
+updateKPI();
+</script>
+</body>
+</html>
