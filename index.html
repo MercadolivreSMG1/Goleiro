@@ -25,7 +25,7 @@ button{font-family:inherit;cursor:pointer}
 .screen.on{display:flex}
 
 /* ---------- BIPAGEM ---------- */
-#verdict{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:16px;text-align:center;position:relative;transition:background .18s ease;background:linear-gradient(175deg,var(--navy-2),var(--navy))}
+#verdict{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:56px 16px 16px;text-align:center;position:relative;transition:background .18s ease;background:linear-gradient(175deg,var(--navy-2),var(--navy))}
 #verdict.ok{background:linear-gradient(175deg,var(--ok),var(--ok-d))}
 #verdict.no{background:linear-gradient(175deg,var(--no),var(--no-d))}
 #verdict.nf{background:linear-gradient(175deg,var(--warn),#A85A00)}
@@ -47,9 +47,16 @@ button{font-family:inherit;cursor:pointer}
 #alert .small{font-size:13px;margin-top:6px;color:#fff;font-weight:600}
 @keyframes blink{0%,55%{opacity:1}56%,100%{opacity:.35}}
 @media (prefers-reduced-motion:reduce){#alert,#verdict.flash,.dot.load{animation:none}}
-#sync{position:absolute;top:8px;right:11px;font-size:11px;color:rgba(255,255,255,.62);font-family:"Space Grotesk",sans-serif}
-#fbStat{position:absolute;top:26px;right:11px;font-size:10.5px;color:rgba(255,255,255,.45);font-family:"Space Grotesk",sans-serif}
-#typed{position:absolute;top:8px;left:50%;transform:translateX(-50%);font-family:"Space Grotesk",sans-serif;font-size:13px;letter-spacing:2px;color:rgba(255,255,255,.55);min-height:16px}
+
+/* seletor de ciclo */
+#cyc{position:absolute;top:10px;left:10px;display:flex;background:rgba(0,0,0,.32);border:1px solid rgba(255,255,255,.18);border-radius:13px;padding:3px;gap:3px;z-index:3}
+#cyc button{border:0;background:transparent;color:rgba(255,255,255,.72);font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:16px;padding:8px 18px;border-radius:10px;letter-spacing:.5px;transition:background .15s ease,color .15s ease}
+#cyc button.on{background:var(--ml);color:#0B1733;box-shadow:0 3px 12px rgba(255,230,0,.25)}
+#cyc button:active{transform:scale(.96)}
+
+#sync{position:absolute;top:10px;right:12px;font-size:11px;color:rgba(255,255,255,.65);font-family:"Space Grotesk",sans-serif;text-align:right}
+#fbStat{position:absolute;top:27px;right:12px;font-size:10.5px;color:rgba(255,255,255,.48);font-family:"Space Grotesk",sans-serif;text-align:right;max-width:55vw}
+#typed{position:absolute;top:58px;left:50%;transform:translateX(-50%);font-family:"Space Grotesk",sans-serif;font-size:13px;letter-spacing:2px;color:rgba(255,255,255,.55);min-height:16px}
 #bar{display:flex;gap:1px;background:var(--line);border-top:1px solid var(--line)}
 #bar .kpi{flex:1;background:var(--navy);padding:9px 4px;text-align:center}
 #bar .kpi b{font-family:"Space Grotesk",sans-serif;font-size:20px;display:block;line-height:1.05}
@@ -64,16 +71,20 @@ button{font-family:inherit;cursor:pointer}
 .dot.ok{background:var(--ok)}.dot.err{background:var(--no)}.dot.load{background:var(--ml);animation:pulse 1s infinite}
 @keyframes pulse{50%{opacity:.25}}
 #tools{display:flex;gap:7px;padding:8px 10px;background:var(--navy);border-top:1px solid var(--line)}
-#tools .btn{flex:1;padding:10px 3px;font-size:11.5px;text-align:center}
+#tools .btn{flex:1;padding:10px 3px;font-size:12px;text-align:center}
+#tools .btn.hl{background:rgba(52,131,250,.22);border-color:rgba(52,131,250,.55)}
 .btn{border:1px solid var(--line);border-radius:11px;padding:11px 15px;font-size:13.5px;font-weight:600;background:rgba(255,255,255,.1);color:var(--ink);transition:transform .12s ease}
 .btn:active{transform:scale(.97)}
 .btn.primary{background:var(--ml);color:#0B1733;border-color:transparent}
 .btn.ghost{background:transparent}
+.btn.small{padding:8px 12px;font-size:12.5px}
 .btn.wide{flex:1;min-width:130px;text-align:center}
+.btn[disabled]{opacity:.5;pointer-events:none}
 
-/* ---------- AJUSTES ---------- */
-#cfg{overflow-y:auto;padding:16px;gap:13px;background:var(--navy);-webkit-overflow-scrolling:touch}
+/* ---------- AJUSTES / HISTÓRICO ---------- */
+#cfg,#hist{overflow-y:auto;padding:16px;gap:13px;background:var(--navy);-webkit-overflow-scrolling:touch}
 .head{display:flex;align-items:center;gap:12px}
+.head .sp{flex:1}
 .badge{background:var(--ml);color:#0B1733;font-weight:700;font-size:12px;padding:5px 10px;border-radius:8px}
 h1{font-family:"Space Grotesk",sans-serif;font-size:21px;margin:0;font-weight:600;letter-spacing:-.4px}
 .sub{color:var(--mute);font-size:13px;margin:2px 0 0}
@@ -83,21 +94,50 @@ h1{font-family:"Space Grotesk",sans-serif;font-size:21px;margin:0;font-weight:60
 .line{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px}
 .line:last-child{border-bottom:0}
 .line .nm{flex:1}
-.line .st{font-size:12px;color:var(--mute);font-family:"Space Grotesk",sans-serif}
+.line .st{font-size:12px;color:var(--mute);font-family:"Space Grotesk",sans-serif;text-align:right}
 .stat{display:flex;gap:18px;margin-top:11px;flex-wrap:wrap}
 .stat b{font-family:"Space Grotesk",sans-serif;font-size:19px;display:block;line-height:1.1}
 .stat span{font-size:11px;color:var(--mute)}
 input[type=text]{width:100%;background:rgba(0,0,0,.34);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 11px;font-size:12.5px;font-family:"Space Grotesk",ui-monospace,monospace}
 input:focus{outline:2px solid var(--dup);outline-offset:1px}
-.map{display:grid;grid-template-columns:repeat(auto-fit,minmax(74px,1fr));gap:8px;margin-top:9px}
+.map{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-top:9px}
 .map label{display:block;font-size:11px;color:var(--mute);margin-bottom:4px}
-.map input{text-align:center;text-transform:uppercase}
-.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px;align-items:center}
 .switch{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--mute);margin-top:9px}
 .switch input{width:19px;height:19px;accent-color:var(--ml)}
 .err{margin-top:10px;background:rgba(242,61,79,.13);border:1px solid rgba(242,61,79,.45);border-radius:11px;padding:11px 12px;font-size:12.5px;line-height:1.5;display:none}
 .err.on{display:block}
-details summary{color:var(--mute);font-size:12.5px;cursor:pointer;margin-top:6px}
+details summary{color:var(--mute);font-size:12.5px;cursor:pointer}
+
+/* histórico */
+.filt{display:flex;gap:6px}
+.filt button{border:1px solid var(--line);background:transparent;color:var(--mute);border-radius:999px;padding:7px 14px;font-weight:600;font-size:12.5px}
+.filt button.on{background:var(--ml);color:#0B1733;border-color:transparent}
+.day{background:rgba(255,255,255,.055);border:1px solid var(--line);border-radius:16px;padding:13px 14px;cursor:pointer;transition:border-color .15s ease}
+.day:hover{border-color:rgba(255,255,255,.25)}
+.day.today{border-color:rgba(255,230,0,.45)}
+.day .dh{display:flex;align-items:baseline;gap:10px}
+.day .dt{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:18px}
+.day .wd{font-size:12px;color:var(--mute);text-transform:capitalize}
+.day .tot{margin-left:auto;font-family:"Space Grotesk",sans-serif;font-size:13px;color:var(--mute)}
+.day .nums{display:flex;gap:16px;margin-top:9px;flex-wrap:wrap}
+.day .nums div{font-size:11px;color:var(--mute)}
+.day .nums b{display:block;font-family:"Space Grotesk",sans-serif;font-size:20px;line-height:1.1;color:var(--ink)}
+.day .nums .g b{color:#4ED88B}.day .nums .r b{color:#FF7B87}.day .nums .a b{color:#FFB055}
+.bar2{display:flex;height:6px;border-radius:99px;overflow:hidden;margin-top:10px;background:rgba(255,255,255,.08)}
+.bar2 i{display:block;height:100%}
+.day .more{display:none;margin-top:12px;border-top:1px solid rgba(255,255,255,.08);padding-top:10px}
+.day.open .more{display:block}
+.day .cy{display:flex;gap:10px;font-size:12.5px;color:var(--mute);margin-bottom:8px;flex-wrap:wrap}
+.day .cy span b{color:var(--ink);font-family:"Space Grotesk",sans-serif}
+.nlist{max-height:240px;overflow-y:auto;margin-top:8px;border:1px solid rgba(255,255,255,.07);border-radius:10px}
+.nlist div{display:flex;gap:10px;padding:7px 10px;font-size:12.5px;border-bottom:1px solid rgba(255,255,255,.05);font-family:"Space Grotesk",sans-serif}
+.nlist div span:first-child{flex:1}
+.nlist .late{color:#FF7B87}.nlist .today{color:var(--ml)}
+.skel{height:84px;border-radius:16px;background:linear-gradient(90deg,rgba(255,255,255,.04),rgba(255,255,255,.09),rgba(255,255,255,.04));background-size:200% 100%;animation:sk 1.2s linear infinite}
+@keyframes sk{to{background-position:-200% 0}}
+.empty2{color:var(--mute);text-align:center;padding:30px 10px;font-size:13.5px}
+
 .modal{position:fixed;inset:0;z-index:20;background:rgba(5,11,25,.86);display:none;align-items:center;justify-content:center;padding:18px}
 .modal.on{display:flex}
 .modal .box{background:var(--navy-2);border:1px solid var(--line);border-radius:16px;padding:18px;max-width:360px;width:100%}
@@ -107,8 +147,10 @@ details summary{color:var(--mute);font-size:12.5px;cursor:pointer;margin-top:6px
 </head>
 <body>
 
+<!-- ============ BIPAGEM ============ -->
 <section id="scan" class="screen on">
   <div id="verdict">
+    <div id="cyc"><button data-c="AM" class="on">AM</button><button data-c="PM">PM</button></div>
     <div id="typed"></div>
     <div id="sync">iniciando…</div>
     <div id="fbStat"></div>
@@ -127,13 +169,35 @@ details summary{color:var(--mute);font-size:12.5px;cursor:pointer;margin-top:6px
   <div id="log"><div class="empty">As leituras aparecem aqui.</div></div>
   <div id="tools">
     <button class="btn" id="btnRefresh">Atualizar</button>
-    <button class="btn" id="btnExport">Exportar</button>
+    <button class="btn hl" id="btnHistOpen">Histórico</button>
     <button class="btn" id="btnClear">Zerar</button>
     <button class="btn" id="btnType">Digitar</button>
     <button class="btn" id="btnCfg">Ajustes</button>
   </div>
 </section>
 
+<!-- ============ HISTÓRICO ============ -->
+<section id="hist" class="screen">
+  <div class="head">
+    <span class="badge">SMG1</span>
+    <div><h1>Histórico</h1><p class="sub">Todos os postos, por dia</p></div>
+    <div class="sp"></div>
+    <button class="btn small" id="histBack">Voltar</button>
+  </div>
+  <div class="row" style="margin-top:0">
+    <div class="filt" id="histFilt">
+      <button data-f="ALL" class="on">Todos</button><button data-f="AM">AM</button><button data-f="PM">PM</button>
+    </div>
+    <div style="flex:1"></div>
+    <button class="btn small ghost" id="histReload">Recarregar</button>
+  </div>
+  <div id="histList"></div>
+  <div class="row" style="justify-content:center;padding-bottom:12px">
+    <button class="btn small" id="histMore" style="display:none">Carregar dias anteriores</button>
+  </div>
+</section>
+
+<!-- ============ AJUSTES ============ -->
 <section id="cfg" class="screen">
   <div class="head">
     <span class="badge">SMG1</span>
@@ -143,12 +207,8 @@ details summary{color:var(--mute);font-size:12.5px;cursor:pointer;margin-top:6px
   <div class="card">
     <h2>Planilha</h2>
     <div class="line"><div class="dot" id="dRot"></div><div class="nm">roteirizados</div><div class="st" id="sRot">—</div></div>
-    <div class="line"><div class="dot" id="dBase"></div><div class="nm">Pcts Totais AM + PM</div><div class="st" id="sBase">—</div></div>
-    <div class="stat">
-      <div><b id="stRot" class="mono">0</b><span>roteirizados</span></div>
-      <div><b id="stBase" class="mono">0</b><span>na base AM+PM</span></div>
-      <div><b id="stPro" class="mono">0</b><span>com promessa</span></div>
-    </div>
+    <div class="line"><div class="dot" id="dAm"></div><div class="nm">Pcts Totais AM</div><div class="st" id="sAm">—</div></div>
+    <div class="line"><div class="dot" id="dPm"></div><div class="nm">Pcts Totais PM</div><div class="st" id="sPm">—</div></div>
     <div class="row"><button class="btn wide primary" id="btnSync">Sincronizar agora</button></div>
     <div class="err" id="errBox"></div>
   </div>
@@ -156,34 +216,23 @@ details summary{color:var(--mute);font-size:12.5px;cursor:pointer;margin-top:6px
   <div class="card">
     <h2>Leitura</h2>
     <label class="switch"><input type="checkbox" id="optSound" checked> Bipe sonoro e vibração</label>
-    <label class="switch"><input type="checkbox" id="optAutoSync" checked> Ressincronizar a cada 5 min</label>
+    <label class="switch"><input type="checkbox" id="optAutoSync" checked> Ressincronizar a planilha a cada 5 min</label>
   </div>
 
   <div class="card">
-    <details open>
+    <details>
       <summary>Origem dos dados</summary>
-      <p class="hint" style="margin-top:10px">As colunas são reconhecidas pelo cabeçalho de cada aba a cada sincronização — não precisa configurar letra nenhuma.</p>
+      <p class="hint" style="margin-top:10px">Colunas reconhecidas pelo cabeçalho de cada aba, a cada sincronização.</p>
       <input type="text" id="url" spellcheck="false">
       <div class="map">
-        <div><label>Aba roteirizados</label><input type="text" id="shRot" value="roteirizados" style="text-transform:none"></div>
-        <div><label>Aba totais AM</label><input type="text" id="shAm" value="Pcts Totais AM" style="text-transform:none"></div>
-        <div><label>Aba totais PM</label><input type="text" id="shPm" value="Pcts Totais PM" style="text-transform:none"></div>
+        <div><label>Aba roteirizados</label><input type="text" id="shRot" value="roteirizados"></div>
+        <div><label>Aba totais AM</label><input type="text" id="shAm" value="Pcts Totais AM"></div>
+        <div><label>Aba totais PM</label><input type="text" id="shPm" value="Pcts Totais PM"></div>
       </div>
       <div class="line" style="margin-top:10px"><div class="nm">colunas em uso</div><div class="st" id="detected">—</div></div>
+      <label style="display:block;font-size:11px;color:var(--mute);margin:12px 0 4px">Banco do histórico (Firebase)</label>
+      <input type="text" id="fbUrl" spellcheck="false" value="https://goleiro-96229-default-rtdb.firebaseio.com/">
     </details>
-  </div>
-
-  <div class="card">
-    <h2>Histórico entre postos</h2>
-    <p class="hint">Cada bipagem é enviada para o banco compartilhado. Dá pra ver o total do dia somando todos os computadores e exportar qualquer data.</p>
-    <input type="text" id="fbUrl" spellcheck="false" value="https://goleiro-96229-default-rtdb.firebaseio.com/">
-    <div class="row">
-      <input type="text" id="histDate" style="max-width:150px" placeholder="AAAA-MM-DD">
-      <button class="btn primary" id="btnHist">Ver dia</button>
-      <button class="btn ghost" id="btnHistCsv">Exportar dia</button>
-    </div>
-    <div class="stat" id="histStat"></div>
-    <div class="err" id="histErr"></div>
   </div>
 
   <div class="row" style="padding-bottom:10px">
@@ -194,7 +243,7 @@ details summary{color:var(--mute);font-size:12.5px;cursor:pointer;margin-top:6px
 <div class="modal" id="typeModal">
   <div class="box">
     <h3>Digitar o ID</h3>
-    <input type="text" id="typeIn" style="margin-bottom:4px" inputmode="numeric" placeholder="47949605866">
+    <input type="text" id="typeIn" inputmode="numeric" placeholder="47949605866">
     <div class="row">
       <button class="btn wide primary" id="typeGo">Validar</button>
       <button class="btn wide ghost" id="typeNo">Fechar</button>
@@ -215,28 +264,33 @@ details summary{color:var(--mute);font-size:12.5px;cursor:pointer;margin-top:6px
 <script>
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/1ZXh-hpVG2TVVKIeDlzfa3BmewNm0B73z77EQLMijmd4/edit";
 const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
 
-let ROT = new Map(), BASE = new Map(), SCANNED = new Map();
+let CYCLE = "AM";
+let ROT = new Map();                              // id -> ciclo da rota (AM1, PM1…)
+let TOT = {AM: new Map(), PM: new Map()};        // id -> {pr, st}
+let SCANNED = new Map();
 let counts = {tot:0, ok:0, no:0, nf:0};
 let lastSync = null, syncTimer = null, syncing = false;
 
+/* ---------- utilidades ---------- */
 const norm = v => String(v==null?"":v).trim().toUpperCase().replace(/\s+/g,"").replace(/^["']|["']$/g,"");
-const todayISO = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
-
-/* promessa: sempre a ÚLTIMA data do texto. aceita 2026-08-25 e 25-08-2026 */
+const isoOf = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const todayISO = () => isoOf(new Date());
 function lastDate(txt){
   const s = String(txt==null?"":txt);
   const iso = s.match(/\d{4}-\d{2}-\d{2}/g);
   if(iso) return iso[iso.length-1];
   const br4 = s.match(/\d{2}[-\/]\d{2}[-\/]\d{4}/g);
   if(br4){ const p = br4[br4.length-1].split(/[-\/]/); return `${p[2]}-${p[1]}-${p[0]}`; }
-  const br2 = s.match(/\b\d{2}\/\d{2}\/\d{2}\b/g);           // Promessa_final vem como dd/mm/aa
+  const br2 = s.match(/\b\d{2}\/\d{2}\/\d{2}\b/g);
   if(br2){ const p = br2[br2.length-1].split("/"); return `20${p[2]}-${p[1]}-${p[0]}`; }
   return "";
 }
 const promiseState = iso => !iso ? "none" : (iso === todayISO() ? "today" : (iso < todayISO() ? "late" : "future"));
 const fmtBR = iso => { if(!iso) return ""; const p = iso.split("-"); return `${p[2]}/${p[1]}/${p[0]}`; };
 const daysLate = iso => Math.round((new Date(todayISO()+"T00:00:00") - new Date(iso+"T00:00:00"))/86400000);
+const isShip = v => /^\d{8,}$/.test(v);
 
 function parseCSV(text){
   const rows = []; let row = [], cell = "", q = false;
@@ -258,6 +312,7 @@ function parseCSV(text){
 const sheetId = u => { const m = String(u).match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/); return m ? m[1] : String(u).trim(); };
 const LT = i => { let n=i+1,r=""; while(n>0){ const m=(n-1)%26; r=String.fromCharCode(65+m)+r; n=Math.floor((n-1)/26);} return r; };
 
+/* ---------- planilha ---------- */
 async function fetchCsv(id, sheet, tq){
   let url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheet)}&cb=${Date.now()}`;
   if(tq) url += `&tq=${encodeURIComponent(tq)}`;
@@ -270,59 +325,30 @@ async function fetchCsv(id, sheet, tq){
   if(/^\s*\{/.test(t) || /Invalid query/i.test(t)) throw new Error("consulta recusada");
   return parseCSV(t);
 }
-
-/* acha ID, promessa e status pelo cabeçalho — sobrevive a colunas novas/renomeadas na planilha.
-   entre colunas de promessa (ex.: Promessa_inicial e Promessa_final), sempre prioriza a que tem "final" no nome. */
 function findCols(rows){
   const head = (rows[0] || []).map(h => String(h).trim().toLowerCase());
   const body = rows.slice(1);
   const width = Math.max(head.length, ...body.map(r => r.length), 1);
   const val = i => { for(const r of body){ const v = String(r[i] == null ? "" : r[i]).trim(); if(v) return v; } return ""; };
-  const byVal = re => { for(let i = 0; i < width; i++) if(re.test(val(i))) return i; return -1; };
-
   let id = head.findIndex(h => h === "id");
-  if(id < 0){ for(let i = 0; i < width; i++) if(!head[i] && /^\d{8,}$/.test(val(i))){ id = i; break; } }
-  if(id < 0) id = byVal(/^\d{8,}$/);
-
-  const promesIdx = [];
-  head.forEach((h, i) => { if(h && /promes|promise/.test(h)) promesIdx.push(i); });
-  let pr = -1;
-  if(promesIdx.length){
-    const finalIdx = promesIdx.find(i => /final/.test(head[i]));
-    pr = finalIdx != null ? finalIdx : promesIdx[0];
-  }
-  if(pr < 0) pr = byVal(/^\d{4}-\d{2}-\d{2}\s*-\s*\d{4}-\d{2}-\d{2}/);
-
+  if(id < 0){ for(let i = 0; i < width; i++) if(/^\d{8,}$/.test(val(i))){ id = i; break; } }
+  const prs = []; head.forEach((h, i) => { if(h && /promes|promise/.test(h)) prs.push(i); });
+  let pr = prs.length ? (prs.find(i => /final/.test(head[i])) ?? prs[0]) : -1;
   let st = head.findIndex(h => h === "status");
-  if(st < 0) st = head.findIndex(h => h === "ciclo_final_atualizado");
   if(st < 0) st = head.findIndex(h => /^ciclo/.test(h));
-
   return {id, pr, st};
 }
-
-/* baixa só as colunas detectadas: planilhas de 10+ MB viram ~1 MB por sincronização */
 async function loadSheet(id, sheet){
-  let c, rows;
-  try{
-    c = findCols(await fetchCsv(id, sheet, "select * limit 4"));
-    if(c.id < 0) throw new Error("não achei a coluna de ID");
-    const letters = [c.id, c.pr, c.st].filter(i => i >= 0).map(LT);
-    rows = await fetchCsv(id, sheet, "select " + letters.join(","));
-    let k = 0;
-    const ix = {id: k++, pr: c.pr >= 0 ? k++ : -1, st: c.st >= 0 ? k++ : -1};
-    return {rows, ix, label: `${sheet}: ID ${LT(c.id)}${c.pr >= 0 ? " · promessa " + LT(c.pr) : ""}${c.st >= 0 ? " · status " + LT(c.st) : ""}`};
-  }catch(e){
-    rows = await fetchCsv(id, sheet, null);
-    c = findCols(rows.slice(0, 5));
-    if(c.id < 0) throw new Error("não achei a coluna de ID");
-    return {rows, ix: c, label: `${sheet}: ID ${LT(c.id)} (leitura completa)`};
-  }
+  const c = findCols(await fetchCsv(id, sheet, "select * limit 4"));
+  if(c.id < 0) throw new Error("não achei a coluna de ID");
+  const cols = [c.id, c.pr, c.st].filter(i => i >= 0);
+  const rows = await fetchCsv(id, sheet, "select " + cols.map(LT).join(","));
+  let k = 0;
+  const ix = {id: k++, pr: c.pr >= 0 ? k++ : -1, st: c.st >= 0 ? k++ : -1};
+  return {rows: rows.slice(1), ix, label: `${sheet}: ID ${LT(c.id)}${c.pr >= 0 ? " · promessa " + LT(c.pr) : ""}${c.st >= 0 ? " · " + (rows[0][ix.st]||"status") + " " + LT(c.st) : ""}`};
 }
 
-function setLine(w, state, txt){
-  $(w === "rot" ? "#dRot" : "#dBase").className = "dot " + state;
-  $(w === "rot" ? "#sRot" : "#sBase").textContent = txt;
-}
+function setLine(key, state, txt){ $("#d"+key).className = "dot " + state; $("#s"+key).textContent = txt; }
 function showErr(m){
   const b = $("#errBox");
   if(!m){ b.classList.remove("on"); return; }
@@ -333,120 +359,95 @@ async function sync(silent){
   if(syncing) return false;
   syncing = true;
   const id = sheetId($("#url").value || SHEET_URL);
-  if(!silent){ showErr(null); setLine("rot","load","buscando…"); setLine("base","load","buscando…"); }
-  if(!ROT.size && !BASE.size) $("#sync").textContent = "sincronizando…";
+  if(!silent){ showErr(null); ["Rot","Am","Pm"].forEach(k => setLine(k, "load", "buscando…")); }
+  if(!ROT.size) $("#sync").textContent = "sincronizando…";
   const problems = [], labels = [];
 
   try{
     const {rows, ix, label} = await loadSheet(id, $("#shRot").value.trim() || "roteirizados");
-    const set = new Set();
-    for(const r of rows){
-      if(!r || !r.length) continue;
-      const v = norm(r[ix.id]);
-      if(v && /^[A-Z0-9][A-Z0-9\-_.]{5,}$/.test(v)) set.add(v);
-    }
-    if(!set.size) throw new Error("nenhum ID lido");
-    ROT = set; labels.push(label); setLine("rot", "ok", `${set.size} IDs`);
-  }catch(e){ problems.push(`roteirizados: ${e.message}`); setLine("rot", "err", "falhou"); }
+    const m = new Map();
+    for(const r of rows){ const v = norm(r[ix.id]); if(isShip(v)) m.set(v, ix.st >= 0 ? String(r[ix.st]||"").trim().toUpperCase() : ""); }
+    if(!m.size) throw new Error("nenhum ID lido");
+    ROT = m; labels.push(label);
+    const am = countRot("AM"), pm = countRot("PM");
+    setLine("Rot", "ok", `${m.size} IDs · AM ${am} · PM ${pm}`);
+  }catch(e){ problems.push(`roteirizados: ${e.message}`); setLine("Rot", "err", "falhou"); }
 
-  const merged = new Map();
-  const totJobs = [
-    {sheet: $("#shAm").value.trim() || "Pcts Totais AM", origin: "AM"},
-    {sheet: $("#shPm").value.trim() || "Pcts Totais PM", origin: "PM"}
-  ];
-  let anyTot = false;
-  for(const j of totJobs){
+  for(const [cyc, key, sel, def] of [["AM","Am","#shAm","Pcts Totais AM"],["PM","Pm","#shPm","Pcts Totais PM"]]){
     try{
-      const {rows, ix, label} = await loadSheet(id, j.sheet);
+      const {rows, ix, label} = await loadSheet(id, $(sel).value.trim() || def);
+      const m = new Map();
       for(const r of rows){
-        if(!r || !r.length) continue;
-        const v = norm(r[ix.id]);
-        if(!v || !/^[A-Z0-9][A-Z0-9\-_.]{5,}$/.test(v)) continue;
-        merged.set(v, {
-          pr: ix.pr >= 0 ? lastDate(r[ix.pr]) : "",
-          st: ix.st >= 0 ? String(r[ix.st] == null ? "" : r[ix.st]).trim() : "",
-          origin: j.origin
-        });
+        const v = norm(r[ix.id]); if(!isShip(v)) continue;
+        m.set(v, {pr: ix.pr >= 0 ? lastDate(r[ix.pr]) : "", st: ix.st >= 0 ? String(r[ix.st]||"").trim() : ""});
       }
-      anyTot = true; labels.push(label);
-    }catch(e){ problems.push(`${j.sheet}: ${e.message}`); }
+      TOT[cyc] = m; labels.push(label);
+      setLine(key, "ok", `${m.size} IDs`);
+    }catch(e){ problems.push(`${def}: ${e.message}`); setLine(key, "err", "falhou"); }
   }
-  if(anyTot){ BASE = merged; setLine("base", "ok", `${merged.size} IDs`); }
-  else setLine("base", "err", "falhou");
 
   $("#detected").textContent = labels.length ? labels.join("  |  ") : "—";
-  refresh(); cacheSave();
+  cacheSave();
   if(problems.length){ if(!silent) showErr(problems.join(" · ")); }
   else { lastSync = new Date(); showErr(null); }
   paintSync();
-  if(!SCANNED.size && (ROT.size || BASE.size)) idleScreen();
+  if(!SCANNED.size) idleScreen();
   syncing = false;
   return !problems.length;
 }
+function countRot(cyc){ let n = 0; for(const c of ROT.values()) if(!c || c.startsWith(cyc)) n++; return n; }
 function paintSync(){
   $("#sync").textContent = lastSync
     ? `base ${lastSync.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}`
-    : (ROT.size || BASE.size ? "base em cache" : "sem base");
-}
-function refresh(){
-  $("#stRot").textContent = ROT.size;
-  $("#stBase").textContent = BASE.size;
-  $("#stPro").textContent = [...BASE.values()].filter(v => v.pr).length;
+    : (ROT.size ? "base em cache" : "sem base");
 }
 function idleScreen(){
   if(SCANNED.size) return;
   $("#verdict").className = "";
   $("#vLabel").textContent = "Bipe o pacote";
-  $("#vId").textContent = `${ROT.size} roteirizados carregados`;
+  $("#vId").textContent = ROT.size ? `${countRot(CYCLE).toLocaleString("pt-BR")} roteirizados no ${CYCLE}` : "Carregando base…";
   $("#vMeta").innerHTML = ""; $("#vPromise").innerHTML = ""; $("#alert").classList.remove("on");
 }
 
-/* cache local */
+/* ---------- ciclo AM / PM ---------- */
+function paintCycle(){
+  $$("#cyc button").forEach(b => b.classList.toggle("on", b.dataset.c === CYCLE));
+  document.title = `Goleiro ${CYCLE} · SMG1`;
+}
+function setCycle(c){
+  if(c === CYCLE) return;
+  const go = () => {
+    CYCLE = c; paintCycle(); resetSession(); cacheSave(); fbTick();
+  };
+  if(SCANNED.size) ask(`Trocar para o ${c}?`, "As leituras desta tela serão zeradas. O que já foi bipado continua salvo no histórico.", go);
+  else go();
+}
+$$("#cyc button").forEach(b => b.onclick = e => { e.stopPropagation(); setCycle(b.dataset.c); });
+
+/* ---------- cache local ---------- */
 const store = {
   async set(k,v){ try{ if(window.storage) return await window.storage.set(k,v); }catch(e){} try{ localStorage.setItem(k,v); }catch(e){} },
   async get(k){ try{ if(window.storage){ const r = await window.storage.get(k); return r?r.value:null; } }catch(e){} try{ return localStorage.getItem(k); }catch(e){ return null; } }
 };
-const packSet = s => [...s].join("\n");
-const unpackSet = s => new Set(s ? s.split("\n").filter(Boolean) : []);
-const packMap = m => [...m.entries()].map(([k,v]) => `${k}|${v.pr}|${v.st}|${v.origin||""}`).join("\n");
-const unpackMap = s => { const m = new Map(); if(!s) return m;
-  for(const l of s.split("\n")){ const p = l.split("|"); if(p[0]) m.set(p[0], {pr:p[1]||"", st:p[2]||"", origin:p[3]||""}); } return m; };
+const packRot = m => [...m.entries()].map(([k,v]) => `${k}|${v}`).join("\n");
+const unpackRot = s => { const m = new Map(); if(s) for(const l of s.split("\n")){ const p = l.split("|"); if(p[0]) m.set(p[0], p[1]||""); } return m; };
+const packTot = m => [...m.entries()].map(([k,v]) => `${k}|${v.pr}|${v.st}`).join("\n");
+const unpackTot = s => { const m = new Map(); if(s) for(const l of s.split("\n")){ const p = l.split("|"); if(p[0]) m.set(p[0], {pr:p[1]||"", st:p[2]||""}); } return m; };
 let cacheTimer = null;
 function cacheSave(){
   clearTimeout(cacheTimer);
   cacheTimer = setTimeout(() => {
-    store.set("goleiro5:cfg", JSON.stringify({
+    store.set("goleiro6:cfg", JSON.stringify({
       url:$("#url").value, shRot:$("#shRot").value, shAm:$("#shAm").value, shPm:$("#shPm").value, fb:$("#fbUrl").value,
-      snd:$("#optSound").checked, asy:$("#optAutoSync").checked
+      snd:$("#optSound").checked, asy:$("#optAutoSync").checked, cyc:CYCLE
     }));
-    store.set("goleiro5:rot", packSet(ROT));
-    store.set("goleiro5:base", packMap(BASE));
+    store.set("goleiro6:rot", packRot(ROT));
+    store.set("goleiro6:am", packTot(TOT.AM));
+    store.set("goleiro6:pm", packTot(TOT.PM));
   }, 500);
 }
-(async function boot(){
-  try{
-    const c = JSON.parse(await store.get("goleiro5:cfg") || "{}");
-    if(c.url) $("#url").value = c.url;
-    if(c.shRot) $("#shRot").value = c.shRot;
-    if(c.shAm) $("#shAm").value = c.shAm;
-    if(c.shPm) $("#shPm").value = c.shPm;
-    if(c.fb) $("#fbUrl").value = c.fb;
-    if(c.snd === false) $("#optSound").checked = false;
-    if(c.asy === false) $("#optAutoSync").checked = false;
-  }catch(e){}
-  if(!$("#url").value) $("#url").value = SHEET_URL;
-  const [r, b] = await Promise.all([store.get("goleiro5:rot"), store.get("goleiro5:base")]);
-  ROT = unpackSet(r); BASE = unpackMap(b);
-  if(ROT.size || BASE.size){
-    setLine("rot","ok",`${ROT.size} IDs em cache`); setLine("base","ok",`${BASE.size} IDs em cache`);
-    refresh(); idleScreen(); paintSync();
-  }
-  await sync(true);
-  startAutoSync();
-  startFbPoll();
-})();
 
-/* som */
+/* ---------- som ---------- */
 let actx = null;
 function beep(seq){
   if(!$("#optSound").checked) return;
@@ -467,11 +468,9 @@ function beep(seq){
 const buzz = p => { if($("#optSound").checked && navigator.vibrate) try{ navigator.vibrate(p); }catch(e){} };
 document.addEventListener("pointerdown", () => { try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); actx.resume(); }catch(e){} }, {once:true});
 
-/* ---------- leitura: captura global de teclado (funciona sem foco) ---------- */
+/* ---------- leitura: captura global de teclado ---------- */
 const verdict = $("#verdict");
 let buf = "", lastKey = 0, endTimer = null;
-
-/* extrai o ID de leituras cruas tipo:  ^id^Ç^47949605866^,^t^Ç^lm^{  */
 function extractId(raw){
   if(!raw) return "";
   const s = String(raw).replace(/[\u0000-\u001F]/g, " ").trim();
@@ -482,17 +481,16 @@ function extractId(raw){
   const clean = s.replace(/[^A-Za-z0-9\-_.]/g, "").toUpperCase();
   return clean.length >= 5 ? clean : "";
 }
-
 function showTyped(){ $("#typed").textContent = buf ? buf.slice(-26) : ""; }
 function commit(){
   clearTimeout(endTimer);
   const raw = buf; buf = ""; showTyped();
   const id = extractId(raw);
-  if(!id) return;
-  render(evaluate(id));
+  if(id) render(evaluate(id));
 }
 document.addEventListener("keydown", e => {
-  if($("#cfg").classList.contains("on")) return;
+  if(!$("#scan").classList.contains("on")) return;
+  if($(".modal.on")) return;
   if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
   if(e.key === "Enter" || e.key === "Tab"){ e.preventDefault(); if(buf) commit(); return; }
   if(e.key === "Backspace"){ buf = buf.slice(0, -1); showTyped(); return; }
@@ -500,49 +498,51 @@ document.addEventListener("keydown", e => {
   const now = Date.now();
   if(now - lastKey > 600) buf = "";
   lastKey = now;
-  buf += e.key;
-  showTyped();
+  buf += e.key; showTyped();
   clearTimeout(endTimer);
   endTimer = setTimeout(() => { if((buf.match(/\d/g) || []).length >= 8) commit(); }, 220);
 }, true);
 
-/* digitação manual */
 $("#btnType").onclick = () => { $("#typeModal").classList.add("on"); const i = $("#typeIn"); i.value = ""; setTimeout(() => i.focus(), 60); };
 $("#typeNo").onclick = () => $("#typeModal").classList.remove("on");
 $("#typeGo").onclick = () => { const id = extractId($("#typeIn").value); $("#typeModal").classList.remove("on"); if(id) render(evaluate(id)); };
 $("#typeIn").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); $("#typeGo").click(); } });
 
+/* ---------- regra de validação ---------- */
 function evaluate(id){
-  const b = BASE.get(id);
-  const routed = ROT.has(id), dup = SCANNED.has(id);
-  const pr = b ? b.pr : "", st = b ? b.st : "", origin = b ? b.origin : "";
-  return {id, kind: routed ? "ok" : (b ? "no" : "nf"), dup, routed, pr, st, origin, ps: promiseState(pr), at:new Date()};
+  const rc = ROT.has(id) ? ROT.get(id) : null;              // ciclo da rota, se roteirizado
+  const routed = rc !== null && (!rc || rc.startsWith(CYCLE));
+  const otherRoute = rc !== null && !routed ? rc : "";       // roteirizado, mas em outro ciclo
+  const other = CYCLE === "AM" ? "PM" : "AM";
+  const b = TOT[CYCLE].get(id) || TOT[other].get(id) || null;
+  const origin = TOT[CYCLE].has(id) ? CYCLE : (TOT[other].has(id) ? other : "");
+  const pr = b ? b.pr : "", st = b ? b.st : "";
+  const kind = routed ? "ok" : (b || otherRoute ? "no" : "nf");
+  return {id, kind, dup: SCANNED.has(id), routed, otherRoute, pr, st, origin, ps: promiseState(pr), at: new Date()};
 }
 function render(r){
   if(!r.dup){
     counts.tot++; counts[r.kind]++; SCANNED.set(r.id, r); addLog(r);
-    fbRecord({id:r.id, kind:r.kind, pr:r.pr, st:r.st, origin:r.origin, at:r.at.toISOString()});
+    fbRecord({id:r.id, kind:r.kind, pr:r.pr, st:r.st, origin:r.origin, rota:r.otherRoute||"", at:r.at.toISOString()});
   }
   verdict.className = r.dup ? "dup" : r.kind;
   void verdict.offsetWidth; verdict.classList.add("flash");
   $("#vLabel").textContent = r.dup ? "JÁ BIPADO" : r.kind === "ok" ? "ROTEIRIZADO" : r.kind === "nf" ? "FORA DA BASE" : "NÃO ROTEIRIZADO";
   $("#vId").textContent = r.id;
-  const meta = $("#vMeta"); meta.innerHTML = "";
-  const chip = t => { const d = document.createElement("div"); d.className="chip"; d.textContent=t; meta.appendChild(d); };
+
   const pz = $("#vPromise");
   if(r.pr){
-    const tail = r.ps === "today" ? "é hoje"
-      : r.ps === "late" ? `vencida há ${daysLate(r.pr)} dia(s)`
-      : `faltam ${-daysLate(r.pr)} dia(s)`;
+    const tail = r.ps === "today" ? "é hoje" : r.ps === "late" ? `vencida há ${daysLate(r.pr)} dia(s)` : `faltam ${-daysLate(r.pr)} dia(s)`;
     pz.className = "";
     pz.innerHTML = `<span class="lbl">Promessa</span><span class="val">${fmtBR(r.pr)}</span><span class="tail">${tail}</span>`;
-  }else{
-    pz.className = "none";
-    pz.innerHTML = `<span class="val">Sem promessa na base</span>`;
-  }
-  if(r.st || r.origin) chip(`${r.origin ? r.origin + " · " : ""}${r.st || "sem status"}`);
-  if(r.kind === "ok") chip("na aba roteirizados");
+  }else{ pz.className = "none"; pz.innerHTML = `<span class="val">Sem promessa na base</span>`; }
+
+  const meta = $("#vMeta"); meta.innerHTML = "";
+  const chip = t => { const d = document.createElement("div"); d.className="chip"; d.textContent=t; meta.appendChild(d); };
+  if(r.otherRoute) chip(`roteirizado no ${r.otherRoute}, não no ${CYCLE}`);
+  if(r.origin) chip(`Totais ${r.origin}${r.st ? " · " + r.st : ""}`);
   if(r.dup) chip(`1ª às ${SCANNED.get(r.id).at.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}`);
+
   const al = $("#alert");
   if(!r.routed && (r.ps === "today" || r.ps === "late")){
     al.classList.add("on");
@@ -569,110 +569,196 @@ function addLog(r){
   log.prepend(el);
   while(log.children.length > 200) log.lastChild.remove();
 }
+function resetSession(){
+  SCANNED.clear(); counts = {tot:0,ok:0,no:0,nf:0}; updateKPI();
+  $("#log").innerHTML = '<div class="empty">As leituras aparecem aqui.</div>';
+  idleScreen();
+}
 function flashMsg(t){ $("#sync").textContent = t; setTimeout(paintSync, 2200); }
 
-/* ações */
-function startAutoSync(){
-  clearInterval(syncTimer);
-  syncTimer = setInterval(() => { if($("#optAutoSync").checked) sync(true); }, 300000);
+/* ---------- Firebase: eventos/{data}/{AM|PM}/{id} ---------- */
+function fbBase(){ let u = ($("#fbUrl").value || "").trim(); if(!u) return ""; return u.endsWith("/") ? u : u + "/"; }
+async function fbRecord(rec){
+  const base = fbBase(); if(!base) return;
+  const path = `${base}eventos/${todayISO()}/${CYCLE}/${encodeURIComponent(rec.id)}.json`;
+  try{
+    const ex = await fetch(path, {cache:"no-store"}).then(r => r.ok ? r.json() : null).catch(() => null);
+    if(ex) return;                                   // outro posto já registrou esse ID neste ciclo hoje
+    await fetch(path, {method:"PUT", headers:{"Content-Type":"application/json"}, body: JSON.stringify(rec)});
+  }catch(e){}
 }
+async function fbGet(path){
+  const base = fbBase(); if(!base) throw new Error("banco não configurado em Ajustes");
+  const r = await fetch(`${base}${path}`, {cache:"no-store"});
+  if(!r.ok) throw new Error(r.status === 401 ? "sem permissão — confira as regras do banco" : `HTTP ${r.status}`);
+  return await r.json();
+}
+/* aceita o formato novo (dia → ciclo → id) e o antigo (dia → id) */
+function splitDay(obj){
+  const out = {AM:{}, PM:{}, "?":{}};
+  for(const [k, v] of Object.entries(obj || {})){
+    if(k === "AM" || k === "PM") Object.assign(out[k], v || {});
+    else if(v && v.kind) out["?"][k] = v;
+  }
+  return out;
+}
+const summ = o => { const c = {tot:0, ok:0, no:0, nf:0}; for(const v of Object.values(o)){ c.tot++; if(c[v.kind] != null) c[v.kind]++; } return c; };
+let fbTimer = null;
+async function fbTick(){
+  if(!$("#scan").classList.contains("on")) return;
+  try{
+    const c = summ((await fbGet(`eventos/${todayISO()}/${CYCLE}.json`)) || {});
+    $("#fbStat").textContent = `hoje no ${CYCLE}, todos os postos: ${c.tot} · rot. ${c.ok} · não rot. ${c.no}`;
+  }catch(e){ $("#fbStat").textContent = `histórico: ${e.message}`; }
+}
+function startFbPoll(){ clearInterval(fbTimer); fbTick(); fbTimer = setInterval(fbTick, 30000); }
+
+/* ---------- tela de histórico ---------- */
+let histDates = [], histShown = 0, histFilter = "ALL", histCache = {};
+const WD = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
+function openHist(){ $("#scan").classList.remove("on"); $("#hist").classList.add("on"); loadHist(true); }
+$("#btnHistOpen").onclick = openHist;
+$("#histBack").onclick = () => { $("#hist").classList.remove("on"); $("#scan").classList.add("on"); fbTick(); };
+$("#histReload").onclick = () => { histCache = {}; loadHist(true); };
+$$("#histFilt button").forEach(b => b.onclick = () => {
+  histFilter = b.dataset.f;
+  $$("#histFilt button").forEach(x => x.classList.toggle("on", x === b));
+  $$(".day").forEach(d => paintDay(d.dataset.date));
+});
+async function loadHist(reset){
+  const list = $("#histList");
+  if(reset){
+    histShown = 0;
+    list.innerHTML = '<div class="skel"></div><div class="skel" style="margin-top:10px"></div><div class="skel" style="margin-top:10px"></div>';
+    try{
+      const keys = await fbGet("eventos.json?shallow=true");
+      histDates = Object.keys(keys || {}).filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k)).sort().reverse();
+    }catch(e){
+      list.innerHTML = `<div class="err on">Não consegui ler o histórico: ${e.message}</div>`; return;
+    }
+    list.innerHTML = "";
+    if(!histDates.length){ list.innerHTML = '<div class="empty2">Nenhum dia registrado ainda. As bipagens aparecem aqui assim que forem feitas.</div>'; $("#histMore").style.display = "none"; return; }
+  }
+  const next = histDates.slice(histShown, histShown + 7);
+  histShown += next.length;
+  for(const d of next){
+    const el = document.createElement("div");
+    el.className = "day" + (d === todayISO() ? " today" : ""); el.dataset.date = d;
+    el.innerHTML = '<div class="skel" style="height:60px"></div>';
+    el.onclick = ev => { if(ev.target.closest("button")) return; el.classList.toggle("open"); };
+    list.appendChild(el);
+  }
+  $("#histMore").style.display = histShown < histDates.length ? "" : "none";
+  for(const d of next){
+    try{ if(!histCache[d]) histCache[d] = splitDay(await fbGet(`eventos/${d}.json`)); }
+    catch(e){ histCache[d] = {err: e.message}; }
+    paintDay(d);
+  }
+}
+$("#histMore").onclick = () => loadHist(false);
+function dayRecords(d){
+  const s = histCache[d]; if(!s || s.err) return {};
+  if(histFilter === "AM") return s.AM;
+  if(histFilter === "PM") return s.PM;
+  return Object.assign({}, s["?"], s.PM, s.AM);
+}
+function paintDay(d){
+  const el = $(`.day[data-date="${d}"]`); if(!el) return;
+  const s = histCache[d]; if(!s) return;
+  const [y, m, dd] = d.split("-");
+  const wd = WD[new Date(d + "T12:00:00").getDay()];
+  if(s.err){ el.innerHTML = `<div class="dh"><span class="dt">${dd}/${m}</span><span class="wd">${wd}</span></div><div class="err on">${s.err}</div>`; return; }
+  const recs = dayRecords(d), c = summ(recs);
+  const cAm = summ(s.AM), cPm = summ(s.PM);
+  const pct = n => c.tot ? (n / c.tot * 100) : 0;
+  const nos = Object.entries(recs).filter(([,v]) => v.kind !== "ok")
+    .sort((a,b) => String(a[1].pr||"9").localeCompare(String(b[1].pr||"9")));
+  const wasOpen = el.classList.contains("open");
+  el.innerHTML = `
+    <div class="dh">
+      <span class="dt">${dd}/${m}</span><span class="wd">${d === todayISO() ? "hoje" : wd}</span>
+      <span class="tot">${c.tot.toLocaleString("pt-BR")} bipados</span>
+    </div>
+    <div class="nums">
+      <div class="g"><b>${c.ok}</b>roteirizados</div>
+      <div class="r"><b>${c.no}</b>não rot.</div>
+      <div class="a"><b>${c.nf}</b>fora da base</div>
+      <div><b>${c.tot ? Math.round(c.ok / c.tot * 100) : 0}%</b>aderência</div>
+    </div>
+    <div class="bar2"><i style="width:${pct(c.ok)}%;background:var(--ok)"></i><i style="width:${pct(c.no)}%;background:var(--no)"></i><i style="width:${pct(c.nf)}%;background:var(--warn)"></i></div>
+    <div class="more">
+      <div class="cy">
+        <span>AM: <b>${cAm.tot}</b> · rot. <b>${cAm.ok}</b> · não <b>${cAm.no}</b> · fora <b>${cAm.nf}</b></span>
+        <span>PM: <b>${cPm.tot}</b> · rot. <b>${cPm.ok}</b> · não <b>${cPm.no}</b> · fora <b>${cPm.nf}</b></span>
+      </div>
+      <div class="row" style="margin-top:4px">
+        <button class="btn small primary" data-exp="${d}">Exportar CSV</button>
+        <span style="font-size:12px;color:var(--mute)">${nos.length} pacote(s) com problema</span>
+      </div>
+      ${nos.length ? `<div class="nlist">${nos.slice(0, 300).map(([id, v]) => {
+        const ps = promiseState(v.pr || "");
+        const cls = ps === "late" ? "late" : ps === "today" ? "today" : "";
+        return `<div><span>${id}</span><span>${v.kind === "nf" ? "fora da base" : "não rot."}</span><span class="${cls}">${v.pr ? fmtBR(v.pr) : "—"}</span></div>`;
+      }).join("")}</div>` : ""}
+    </div>`;
+  if(wasOpen) el.classList.add("open");
+  el.querySelector("[data-exp]").onclick = () => exportDay(d);
+}
+function exportDay(d){
+  const s = histCache[d]; if(!s || s.err) return;
+  const map = {today:"hoje", late:"vencida", future:"futura", none:"sem promessa"};
+  const rows = [];
+  for(const cyc of ["AM","PM","?"]){
+    if(histFilter !== "ALL" && histFilter !== cyc) continue;
+    for(const [id, r] of Object.entries(s[cyc] || {})){
+      rows.push([id, cyc === "?" ? "" : cyc,
+        r.kind === "ok" ? "ROTEIRIZADO" : r.kind === "nf" ? "FORA DA BASE" : "NAO ROTEIRIZADO",
+        r.rota || "", (r.st||"").replace(/;/g," "), fmtBR(r.pr||""), map[promiseState(r.pr||"")] || "",
+        r.at ? new Date(r.at).toLocaleString("pt-BR") : ""].join(";"));
+    }
+  }
+  const blob = new Blob(["\uFEFF" + "id;ciclo;resultado;rota_outro_ciclo;status;promessa;situacao_promessa;bipado_em\n" + rows.join("\n")], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+  a.download = `goleiro-${d}${histFilter !== "ALL" ? "-" + histFilter : ""}.csv`; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+}
+
+/* ---------- ações ---------- */
+function startAutoSync(){ clearInterval(syncTimer); syncTimer = setInterval(() => { if($("#optAutoSync").checked) sync(true); }, 300000); }
 $("#btnRefresh").onclick = async () => { flashMsg("atualizando…"); const ok = await sync(true); flashMsg(ok ? "base atualizada" : "falha ao atualizar"); };
 $("#btnSync").onclick = () => sync(false);
 $("#btnCfg").onclick = () => { $("#scan").classList.remove("on"); $("#cfg").classList.add("on"); };
-$("#btnBack").onclick = () => { cacheSave(); $("#cfg").classList.remove("on"); $("#scan").classList.add("on"); };
+$("#btnBack").onclick = () => { cacheSave(); $("#cfg").classList.remove("on"); $("#scan").classList.add("on"); fbTick(); };
 
 let pending = null;
 function ask(t, x, fn){ $("#mTitle").textContent=t; $("#mText").textContent=x; pending=fn; $("#modal").classList.add("on"); }
 $("#mNo").onclick = () => { $("#modal").classList.remove("on"); pending=null; };
 $("#mYes").onclick = () => { $("#modal").classList.remove("on"); if(pending) pending(); pending=null; };
-$("#btnClear").onclick = () => ask("Zerar contagem","Apaga as leituras desta conferência. A base da planilha continua.",() => {
-  SCANNED.clear(); counts = {tot:0,ok:0,no:0,nf:0}; updateKPI();
-  $("#log").innerHTML = '<div class="empty">As leituras aparecem aqui.</div>';
-  idleScreen();
-});
-$("#btnExport").onclick = () => {
-  if(!SCANNED.size) return flashMsg("nada para exportar");
-  const map = {today:"hoje", late:"vencida", future:"futura", none:"sem promessa"};
-  const lines = [...SCANNED.values()].map(r => [
-    r.id,
-    r.kind === "ok" ? "ROTEIRIZADO" : r.kind === "nf" ? "FORA DA BASE" : "NAO ROTEIRIZADO",
-    (r.st||"").replace(/;/g," "), r.origin||"", fmtBR(r.pr), map[r.ps], r.at.toLocaleString("pt-BR")
-  ].join(";"));
-  const blob = new Blob(["\uFEFF" + "id;resultado;status;origem;promessa;situacao_promessa;bipado_em\n" + lines.join("\n")], {type:"text/csv;charset=utf-8"});
-  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
-  a.download = `conferencia-goleiro-${todayISO()}.csv`; a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 3000);
-};
+$("#btnClear").onclick = () => ask("Zerar contagem", "Apaga as leituras desta tela. O que já foi bipado continua salvo no histórico.", resetSession);
+["#optSound","#optAutoSync","#url","#shRot","#shAm","#shPm","#fbUrl"].forEach(s => $(s).addEventListener("change", cacheSave));
 
-/* ---------- histórico compartilhado (Firebase Realtime Database) ---------- */
-function fbUrl(){ let u = ($("#fbUrl").value || "").trim(); if(!u) return ""; if(!u.endsWith("/")) u += "/"; return u; }
-async function fbRecord(rec){
-  const base = fbUrl(); if(!base) return;
-  const path = `${base}eventos/${todayISO()}/${encodeURIComponent(rec.id)}.json`;
+/* ---------- início ---------- */
+(async function boot(){
   try{
-    const existing = await fetch(path).then(r => r.ok ? r.json() : null).catch(() => null);
-    if(existing) return;                                   // outro posto já registrou esse ID hoje
-    await fetch(path, {method:"PUT", headers:{"Content-Type":"application/json"}, body: JSON.stringify(rec)});
-  }catch(e){ /* segue funcionando offline mesmo se o banco falhar */ }
-}
-async function fbFetchDay(date){
-  const base = fbUrl(); if(!base) throw new Error("defina a URL do banco em Ajustes");
-  const r = await fetch(`${base}eventos/${date}.json`, {cache:"no-store"});
-  if(!r.ok) throw new Error(`HTTP ${r.status}`);
-  return (await r.json()) || {};
-}
-function summarize(dataObj){
-  const vals = Object.values(dataObj || {});
-  const c = {tot:0, ok:0, no:0, nf:0};
-  vals.forEach(v => { c.tot++; if(c[v.kind] != null) c[v.kind]++; });
-  return c;
-}
-let fbTimer = null;
-function startFbPoll(){
-  clearInterval(fbTimer);
-  const tick = async () => {
-    if(!$("#scan").classList.contains("on")) return;
-    try{
-      const c = summarize(await fbFetchDay(todayISO()));
-      $("#fbStat").textContent = `hoje em todos os postos: ${c.tot} · roteirizados ${c.ok} · não rot. ${c.no}`;
-    }catch(e){ /* mantém o último valor visível na tela */ }
-  };
-  tick();
-  fbTimer = setInterval(tick, 30000);
-}
-$("#btnHist").onclick = async () => {
-  const d = ($("#histDate").value || todayISO()).trim();
-  $("#histErr").classList.remove("on");
-  $("#histStat").innerHTML = '<div><b class="mono">…</b><span>buscando</span></div>';
-  try{
-    const data = await fbFetchDay(d);
-    const c = summarize(data);
-    $("#histStat").innerHTML = `<div><b class="mono">${c.tot}</b><span>bipados</span></div>
-      <div><b class="mono">${c.ok}</b><span>roteirizados</span></div>
-      <div><b class="mono">${c.no}</b><span>não rot.</span></div>
-      <div><b class="mono">${c.nf}</b><span>fora da base</span></div>`;
-    window._histData = data; window._histDate = d;
-  }catch(e){
-    $("#histStat").innerHTML = "";
-    $("#histErr").textContent = e.message; $("#histErr").classList.add("on");
-  }
-};
-$("#btnHistCsv").onclick = () => {
-  if(!window._histData){ flashMsg("busque um dia antes de exportar"); return; }
-  const map = {today:"hoje", late:"vencida", future:"futura", none:"sem promessa"};
-  const lines = Object.entries(window._histData).map(([id, r]) => [
-    id, r.kind === "ok" ? "ROTEIRIZADO" : r.kind === "nf" ? "FORA DA BASE" : "NAO ROTEIRIZADO",
-    (r.st||"").replace(/;/g," "), r.origin||"", fmtBR(r.pr||""), map[promiseState(r.pr||"")] || "",
-    r.at ? new Date(r.at).toLocaleString("pt-BR") : ""
-  ].join(";"));
-  const blob = new Blob(["\uFEFF" + "id;resultado;status;origem;promessa;situacao_promessa;bipado_em\n" + lines.join("\n")], {type:"text/csv;charset=utf-8"});
-  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
-  a.download = `conferencia-goleiro-${window._histDate}.csv`; a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 3000);
-};
-
-["#optSound","#optAutoSync","#url","#shRot","#shAm","#shPm","#fbUrl"]
-  .forEach(s => $(s).addEventListener("change", cacheSave));
+    const c = JSON.parse(await store.get("goleiro6:cfg") || "{}");
+    if(c.url) $("#url").value = c.url;
+    if(c.shRot) $("#shRot").value = c.shRot;
+    if(c.shAm) $("#shAm").value = c.shAm;
+    if(c.shPm) $("#shPm").value = c.shPm;
+    if(c.fb) $("#fbUrl").value = c.fb;
+    if(c.snd === false) $("#optSound").checked = false;
+    if(c.asy === false) $("#optAutoSync").checked = false;
+    if(c.cyc === "AM" || c.cyc === "PM") CYCLE = c.cyc;
+  }catch(e){}
+  if(!$("#url").value) $("#url").value = SHEET_URL;
+  paintCycle();
+  const [r, am, pm] = await Promise.all([store.get("goleiro6:rot"), store.get("goleiro6:am"), store.get("goleiro6:pm")]);
+  ROT = unpackRot(r); TOT.AM = unpackTot(am); TOT.PM = unpackTot(pm);
+  if(ROT.size){ idleScreen(); paintSync(); }
+  startFbPoll();
+  await sync(true);
+  startAutoSync();
+})();
 updateKPI();
 </script>
 </body>
