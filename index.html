@@ -48,6 +48,7 @@ button{font-family:inherit;cursor:pointer}
 @keyframes blink{0%,55%{opacity:1}56%,100%{opacity:.35}}
 @media (prefers-reduced-motion:reduce){#alert,#verdict.flash,.dot.load{animation:none}}
 #sync{position:absolute;top:8px;right:11px;font-size:11px;color:rgba(255,255,255,.62);font-family:"Space Grotesk",sans-serif}
+#fbStat{position:absolute;top:26px;right:11px;font-size:10.5px;color:rgba(255,255,255,.45);font-family:"Space Grotesk",sans-serif}
 #typed{position:absolute;top:8px;left:50%;transform:translateX(-50%);font-family:"Space Grotesk",sans-serif;font-size:13px;letter-spacing:2px;color:rgba(255,255,255,.55);min-height:16px}
 #bar{display:flex;gap:1px;background:var(--line);border-top:1px solid var(--line)}
 #bar .kpi{flex:1;background:var(--navy);padding:9px 4px;text-align:center}
@@ -110,6 +111,7 @@ details summary{color:var(--mute);font-size:12.5px;cursor:pointer;margin-top:6px
   <div id="verdict">
     <div id="typed"></div>
     <div id="sync">iniciando…</div>
+    <div id="fbStat"></div>
     <h2 id="vLabel">Carregando base</h2>
     <p id="vId">Buscando a planilha</p>
     <div id="vPromise"></div>
@@ -141,10 +143,10 @@ details summary{color:var(--mute);font-size:12.5px;cursor:pointer;margin-top:6px
   <div class="card">
     <h2>Planilha</h2>
     <div class="line"><div class="dot" id="dRot"></div><div class="nm">roteirizados</div><div class="st" id="sRot">—</div></div>
-    <div class="line"><div class="dot" id="dBase"></div><div class="nm">Base Torre</div><div class="st" id="sBase">—</div></div>
+    <div class="line"><div class="dot" id="dBase"></div><div class="nm">Pcts Totais AM + PM</div><div class="st" id="sBase">—</div></div>
     <div class="stat">
       <div><b id="stRot" class="mono">0</b><span>roteirizados</span></div>
-      <div><b id="stBase" class="mono">0</b><span>na base</span></div>
+      <div><b id="stBase" class="mono">0</b><span>na base AM+PM</span></div>
       <div><b id="stPro" class="mono">0</b><span>com promessa</span></div>
     </div>
     <div class="row"><button class="btn wide primary" id="btnSync">Sincronizar agora</button></div>
@@ -153,28 +155,35 @@ details summary{color:var(--mute);font-size:12.5px;cursor:pointer;margin-top:6px
 
   <div class="card">
     <h2>Leitura</h2>
-    <label style="display:block;font-size:11px;color:var(--mute);margin-bottom:4px">Ciclos que aprovam sem estar na aba roteirizados</label>
-    <input type="text" id="ciclosOk" value="AM1" style="text-transform:uppercase">
     <label class="switch"><input type="checkbox" id="optSound" checked> Bipe sonoro e vibração</label>
     <label class="switch"><input type="checkbox" id="optAutoSync" checked> Ressincronizar a cada 5 min</label>
   </div>
 
   <div class="card">
-    <details>
+    <details open>
       <summary>Origem dos dados</summary>
-      <p class="hint" style="margin-top:10px">As colunas são reconhecidas pelo cabeçalho a cada sincronização, então mudar a planilha de lugar não quebra a leitura. Deixe as letras em <b>auto</b>; só preencha se quiser forçar.</p>
+      <p class="hint" style="margin-top:10px">As colunas são reconhecidas pelo cabeçalho de cada aba a cada sincronização — não precisa configurar letra nenhuma.</p>
       <input type="text" id="url" spellcheck="false">
       <div class="map">
-        <div><label>Aba rot.</label><input type="text" id="shRot" value="roteirizados" style="text-transform:none"></div>
-        <div><label>Aba base</label><input type="text" id="shBase" value="Base Torre" style="text-transform:none"></div>
-      </div>
-      <div class="map">
-        <div><label>ID</label><input type="text" id="cId" value="auto"></div>
-        <div><label>Promessa</label><input type="text" id="cPr" value="auto"></div>
-        <div><label>Ciclo</label><input type="text" id="cSt" value="auto"></div>
+        <div><label>Aba roteirizados</label><input type="text" id="shRot" value="roteirizados" style="text-transform:none"></div>
+        <div><label>Aba totais AM</label><input type="text" id="shAm" value="Pcts Totais AM" style="text-transform:none"></div>
+        <div><label>Aba totais PM</label><input type="text" id="shPm" value="Pcts Totais PM" style="text-transform:none"></div>
       </div>
       <div class="line" style="margin-top:10px"><div class="nm">colunas em uso</div><div class="st" id="detected">—</div></div>
     </details>
+  </div>
+
+  <div class="card">
+    <h2>Histórico entre postos</h2>
+    <p class="hint">Cada bipagem é enviada para o banco compartilhado. Dá pra ver o total do dia somando todos os computadores e exportar qualquer data.</p>
+    <input type="text" id="fbUrl" spellcheck="false" value="https://goleiro-96229-default-rtdb.firebaseio.com/">
+    <div class="row">
+      <input type="text" id="histDate" style="max-width:150px" placeholder="AAAA-MM-DD">
+      <button class="btn primary" id="btnHist">Ver dia</button>
+      <button class="btn ghost" id="btnHistCsv">Exportar dia</button>
+    </div>
+    <div class="stat" id="histStat"></div>
+    <div class="err" id="histErr"></div>
   </div>
 
   <div class="row" style="padding-bottom:10px">
@@ -219,8 +228,10 @@ function lastDate(txt){
   const s = String(txt==null?"":txt);
   const iso = s.match(/\d{4}-\d{2}-\d{2}/g);
   if(iso) return iso[iso.length-1];
-  const br = s.match(/\d{2}[-\/]\d{2}[-\/]\d{4}/g);
-  if(br){ const p = br[br.length-1].split(/[-\/]/); return `${p[2]}-${p[1]}-${p[0]}`; }
+  const br4 = s.match(/\d{2}[-\/]\d{2}[-\/]\d{4}/g);
+  if(br4){ const p = br4[br4.length-1].split(/[-\/]/); return `${p[2]}-${p[1]}-${p[0]}`; }
+  const br2 = s.match(/\b\d{2}\/\d{2}\/\d{2}\b/g);           // Promessa_final vem como dd/mm/aa
+  if(br2){ const p = br2[br2.length-1].split("/"); return `20${p[2]}-${p[1]}-${p[0]}`; }
   return "";
 }
 const promiseState = iso => !iso ? "none" : (iso === todayISO() ? "today" : (iso < todayISO() ? "late" : "future"));
@@ -245,13 +256,10 @@ function parseCSV(text){
   return rows;
 }
 const sheetId = u => { const m = String(u).match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/); return m ? m[1] : String(u).trim(); };
-const colIdx = L => { L = String(L).trim().toUpperCase(); let n = 0; for(const c of L) n = n*26 + (c.charCodeAt(0)-64); return n-1; };
-
-const LT = i => { let n = i + 1, r = ""; while(n > 0){ const m = (n - 1) % 26; r = String.fromCharCode(65 + m) + r; n = Math.floor((n - 1) / 26); } return r; };
+const LT = i => { let n=i+1,r=""; while(n>0){ const m=(n-1)%26; r=String.fromCharCode(65+m)+r; n=Math.floor((n-1)/26);} return r; };
 
 async function fetchCsv(id, sheet, tq){
-  const base = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq`;
-  let url = `${base}?tqx=out:csv&headers=0&sheet=${encodeURIComponent(sheet)}&cb=${Date.now()}`;
+  let url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheet)}&cb=${Date.now()}`;
   if(tq) url += `&tq=${encodeURIComponent(tq)}`;
   let r;
   try{ r = await fetch(url, {credentials:"omit", cache:"no-store"}); }
@@ -263,31 +271,36 @@ async function fetchCsv(id, sheet, tq){
   return parseCSV(t);
 }
 
-/* acha ID, promessa e ciclo pelo cabeçalho — sobrevive a colunas novas na planilha */
+/* acha ID, promessa e status pelo cabeçalho — sobrevive a colunas novas/renomeadas na planilha.
+   entre colunas de promessa (ex.: Promessa_inicial e Promessa_final), sempre prioriza a que tem "final" no nome. */
 function findCols(rows){
   const head = (rows[0] || []).map(h => String(h).trim().toLowerCase());
   const body = rows.slice(1);
   const width = Math.max(head.length, ...body.map(r => r.length), 1);
   const val = i => { for(const r of body){ const v = String(r[i] == null ? "" : r[i]).trim(); if(v) return v; } return ""; };
-  const byHead = re => head.findIndex(h => h && re.test(h));
-  const byVal  = re => { for(let i = 0; i < width; i++) if(re.test(val(i))) return i; return -1; };
+  const byVal = re => { for(let i = 0; i < width; i++) if(re.test(val(i))) return i; return -1; };
 
   let id = head.findIndex(h => h === "id");
   if(id < 0){ for(let i = 0; i < width; i++) if(!head[i] && /^\d{8,}$/.test(val(i))){ id = i; break; } }
   if(id < 0) id = byVal(/^\d{8,}$/);
 
-  let pr = byHead(/promise_date/);
-  if(pr < 0) pr = byHead(/promise|promes/);
+  const promesIdx = [];
+  head.forEach((h, i) => { if(h && /promes|promise/.test(h)) promesIdx.push(i); });
+  let pr = -1;
+  if(promesIdx.length){
+    const finalIdx = promesIdx.find(i => /final/.test(head[i]));
+    pr = finalIdx != null ? finalIdx : promesIdx[0];
+  }
   if(pr < 0) pr = byVal(/^\d{4}-\d{2}-\d{2}\s*-\s*\d{4}-\d{2}-\d{2}/);
 
-  let st = head.findIndex(h => h === "ciclo_final_atualizado");
-  if(st < 0) st = byHead(/^ciclo/);
+  let st = head.findIndex(h => h === "status");
+  if(st < 0) st = head.findIndex(h => h === "ciclo_final_atualizado");
+  if(st < 0) st = head.findIndex(h => /^ciclo/.test(h));
 
-  const man = (el, cur) => { const v = String($(el).value || "").trim().toUpperCase(); return /^[A-Z]{1,2}$/.test(v) ? colIdx(v) : cur; };
-  return {id: man("#cId", id), pr: man("#cPr", pr), st: man("#cSt", st)};
+  return {id, pr, st};
 }
 
-/* baixa só as colunas detectadas: a Base Torre inteira são 18 MB, assim fica ~1 MB */
+/* baixa só as colunas detectadas: planilhas de 10+ MB viram ~1 MB por sincronização */
 async function loadSheet(id, sheet){
   let c, rows;
   try{
@@ -297,9 +310,9 @@ async function loadSheet(id, sheet){
     rows = await fetchCsv(id, sheet, "select " + letters.join(","));
     let k = 0;
     const ix = {id: k++, pr: c.pr >= 0 ? k++ : -1, st: c.st >= 0 ? k++ : -1};
-    return {rows, ix, label: `${sheet}: ID ${LT(c.id)}${c.pr >= 0 ? " · promessa " + LT(c.pr) : ""}${c.st >= 0 ? " · ciclo " + LT(c.st) : ""}`};
+    return {rows, ix, label: `${sheet}: ID ${LT(c.id)}${c.pr >= 0 ? " · promessa " + LT(c.pr) : ""}${c.st >= 0 ? " · status " + LT(c.st) : ""}`};
   }catch(e){
-    rows = await fetchCsv(id, sheet, null);            // sem query: usa a planilha toda
+    rows = await fetchCsv(id, sheet, null);
     c = findCols(rows.slice(0, 5));
     if(c.id < 0) throw new Error("não achei a coluna de ID");
     return {rows, ix: c, label: `${sheet}: ID ${LT(c.id)} (leitura completa)`};
@@ -323,32 +336,44 @@ async function sync(silent){
   if(!silent){ showErr(null); setLine("rot","load","buscando…"); setLine("base","load","buscando…"); }
   if(!ROT.size && !BASE.size) $("#sync").textContent = "sincronizando…";
   const problems = [], labels = [];
-  const jobs = [
-    {key:"rot",  sheet:$("#shRot").value.trim()  || "roteirizados"},
-    {key:"base", sheet:$("#shBase").value.trim() || "Base Torre"}
+
+  try{
+    const {rows, ix, label} = await loadSheet(id, $("#shRot").value.trim() || "roteirizados");
+    const set = new Set();
+    for(const r of rows){
+      if(!r || !r.length) continue;
+      const v = norm(r[ix.id]);
+      if(v && /^[A-Z0-9][A-Z0-9\-_.]{5,}$/.test(v)) set.add(v);
+    }
+    if(!set.size) throw new Error("nenhum ID lido");
+    ROT = set; labels.push(label); setLine("rot", "ok", `${set.size} IDs`);
+  }catch(e){ problems.push(`roteirizados: ${e.message}`); setLine("rot", "err", "falhou"); }
+
+  const merged = new Map();
+  const totJobs = [
+    {sheet: $("#shAm").value.trim() || "Pcts Totais AM", origin: "AM"},
+    {sheet: $("#shPm").value.trim() || "Pcts Totais PM", origin: "PM"}
   ];
-  for(const j of jobs){
+  let anyTot = false;
+  for(const j of totJobs){
     try{
       const {rows, ix, label} = await loadSheet(id, j.sheet);
-      const map = new Map();
       for(const r of rows){
         if(!r || !r.length) continue;
         const v = norm(r[ix.id]);
         if(!v || !/^[A-Z0-9][A-Z0-9\-_.]{5,}$/.test(v)) continue;
-        map.set(v, {
+        merged.set(v, {
           pr: ix.pr >= 0 ? lastDate(r[ix.pr]) : "",
-          st: ix.st >= 0 ? String(r[ix.st] == null ? "" : r[ix.st]).trim() : ""
+          st: ix.st >= 0 ? String(r[ix.st] == null ? "" : r[ix.st]).trim() : "",
+          origin: j.origin
         });
       }
-      if(!map.size) throw new Error("nenhum ID lido");
-      if(j.key === "rot") ROT = map; else BASE = map;
-      labels.push(label);
-      setLine(j.key, "ok", `${map.size} IDs`);
-    }catch(e){
-      problems.push(`${j.sheet}: ${e.message}`);
-      setLine(j.key, "err", "falhou");
-    }
+      anyTot = true; labels.push(label);
+    }catch(e){ problems.push(`${j.sheet}: ${e.message}`); }
   }
+  if(anyTot){ BASE = merged; setLine("base", "ok", `${merged.size} IDs`); }
+  else setLine("base", "err", "falhou");
+
   $("#detected").textContent = labels.length ? labels.join("  |  ") : "—";
   refresh(); cacheSave();
   if(problems.length){ if(!silent) showErr(problems.join(" · ")); }
@@ -381,42 +406,44 @@ const store = {
   async set(k,v){ try{ if(window.storage) return await window.storage.set(k,v); }catch(e){} try{ localStorage.setItem(k,v); }catch(e){} },
   async get(k){ try{ if(window.storage){ const r = await window.storage.get(k); return r?r.value:null; } }catch(e){} try{ return localStorage.getItem(k); }catch(e){ return null; } }
 };
-const pack = m => [...m.entries()].map(([k,v]) => `${k}|${v.pr}|${v.st}`).join("\n");
-const unpack = s => { const m = new Map(); if(!s) return m;
-  for(const l of s.split("\n")){ const p = l.split("|"); if(p[0]) m.set(p[0], {pr:p[1]||"", st:p[2]||""}); } return m; };
+const packSet = s => [...s].join("\n");
+const unpackSet = s => new Set(s ? s.split("\n").filter(Boolean) : []);
+const packMap = m => [...m.entries()].map(([k,v]) => `${k}|${v.pr}|${v.st}|${v.origin||""}`).join("\n");
+const unpackMap = s => { const m = new Map(); if(!s) return m;
+  for(const l of s.split("\n")){ const p = l.split("|"); if(p[0]) m.set(p[0], {pr:p[1]||"", st:p[2]||"", origin:p[3]||""}); } return m; };
 let cacheTimer = null;
 function cacheSave(){
   clearTimeout(cacheTimer);
   cacheTimer = setTimeout(() => {
-    store.set("goleiro4:cfg", JSON.stringify({
-      url:$("#url").value, shRot:$("#shRot").value, shBase:$("#shBase").value,
-      c:[$("#cId").value,$("#cPr").value,$("#cSt").value],
-      snd:$("#optSound").checked, asy:$("#optAutoSync").checked, cic:$("#ciclosOk").value
+    store.set("goleiro5:cfg", JSON.stringify({
+      url:$("#url").value, shRot:$("#shRot").value, shAm:$("#shAm").value, shPm:$("#shPm").value, fb:$("#fbUrl").value,
+      snd:$("#optSound").checked, asy:$("#optAutoSync").checked
     }));
-    store.set("goleiro4:rot", pack(ROT));
-    store.set("goleiro4:base", pack(BASE));
+    store.set("goleiro5:rot", packSet(ROT));
+    store.set("goleiro5:base", packMap(BASE));
   }, 500);
 }
 (async function boot(){
   try{
-    const c = JSON.parse(await store.get("goleiro4:cfg") || "{}");
+    const c = JSON.parse(await store.get("goleiro5:cfg") || "{}");
     if(c.url) $("#url").value = c.url;
     if(c.shRot) $("#shRot").value = c.shRot;
-    if(c.shBase) $("#shBase").value = c.shBase;
-    if(c.c) ["#cId","#cPr","#cSt"].forEach((s,i) => { if(c.c[i]) $(s).value = c.c[i]; });
+    if(c.shAm) $("#shAm").value = c.shAm;
+    if(c.shPm) $("#shPm").value = c.shPm;
+    if(c.fb) $("#fbUrl").value = c.fb;
     if(c.snd === false) $("#optSound").checked = false;
-    if(c.cic) $("#ciclosOk").value = c.cic;
     if(c.asy === false) $("#optAutoSync").checked = false;
   }catch(e){}
   if(!$("#url").value) $("#url").value = SHEET_URL;
-  const [r, b] = await Promise.all([store.get("goleiro4:rot"), store.get("goleiro4:base")]);
-  ROT = unpack(r); BASE = unpack(b);
+  const [r, b] = await Promise.all([store.get("goleiro5:rot"), store.get("goleiro5:base")]);
+  ROT = unpackSet(r); BASE = unpackMap(b);
   if(ROT.size || BASE.size){
     setLine("rot","ok",`${ROT.size} IDs em cache`); setLine("base","ok",`${BASE.size} IDs em cache`);
     refresh(); idleScreen(); paintSync();
   }
   await sync(true);
   startAutoSync();
+  startFbPoll();
 })();
 
 /* som */
@@ -485,18 +512,17 @@ $("#typeNo").onclick = () => $("#typeModal").classList.remove("on");
 $("#typeGo").onclick = () => { const id = extractId($("#typeIn").value); $("#typeModal").classList.remove("on"); if(id) render(evaluate(id)); };
 $("#typeIn").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); $("#typeGo").click(); } });
 
-const okCycles = () => new Set(String($("#ciclosOk").value || "AM1").toUpperCase().split(/[,;\s]+/).filter(Boolean));
 function evaluate(id){
-  const b = BASE.get(id), r = ROT.get(id);
-  const byCycle = !!(b && b.st && okCycles().has(b.st.trim().toUpperCase()));
-  const routed = !!r || byCycle, dup = SCANNED.has(id);
-  const via = r ? "na rota" : (byCycle ? `ciclo ${b.st.trim().toUpperCase()}` : "");
-  const pr = (b && b.pr) ? b.pr : (r ? r.pr : "");
-  const st = (b && b.st) ? b.st : (r ? r.st : "");
-  return {id, kind: routed ? "ok" : (b ? "no" : "nf"), dup, routed, via, pr, st, ps: promiseState(pr), at:new Date()};
+  const b = BASE.get(id);
+  const routed = ROT.has(id), dup = SCANNED.has(id);
+  const pr = b ? b.pr : "", st = b ? b.st : "", origin = b ? b.origin : "";
+  return {id, kind: routed ? "ok" : (b ? "no" : "nf"), dup, routed, pr, st, origin, ps: promiseState(pr), at:new Date()};
 }
 function render(r){
-  if(!r.dup){ counts.tot++; counts[r.kind]++; SCANNED.set(r.id, r); addLog(r); }
+  if(!r.dup){
+    counts.tot++; counts[r.kind]++; SCANNED.set(r.id, r); addLog(r);
+    fbRecord({id:r.id, kind:r.kind, pr:r.pr, st:r.st, origin:r.origin, at:r.at.toISOString()});
+  }
   verdict.className = r.dup ? "dup" : r.kind;
   void verdict.offsetWidth; verdict.classList.add("flash");
   $("#vLabel").textContent = r.dup ? "JÁ BIPADO" : r.kind === "ok" ? "ROTEIRIZADO" : r.kind === "nf" ? "FORA DA BASE" : "NÃO ROTEIRIZADO";
@@ -514,8 +540,8 @@ function render(r){
     pz.className = "none";
     pz.innerHTML = `<span class="val">Sem promessa na base</span>`;
   }
-  if(r.st) chip(`Ciclo ${r.st}`);
-  if(r.kind === "ok" && r.via) chip(r.via === "na rota" ? "na aba roteirizados" : `aprovado pelo ${r.via}`);
+  if(r.st || r.origin) chip(`${r.origin ? r.origin + " · " : ""}${r.st || "sem status"}`);
+  if(r.kind === "ok") chip("na aba roteirizados");
   if(r.dup) chip(`1ª às ${SCANNED.get(r.id).at.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}`);
   const al = $("#alert");
   if(!r.routed && (r.ps === "today" || r.ps === "late")){
@@ -570,14 +596,82 @@ $("#btnExport").onclick = () => {
   const lines = [...SCANNED.values()].map(r => [
     r.id,
     r.kind === "ok" ? "ROTEIRIZADO" : r.kind === "nf" ? "FORA DA BASE" : "NAO ROTEIRIZADO",
-    (r.st||"").replace(/;/g," "), r.via||"", fmtBR(r.pr), map[r.ps], r.at.toLocaleString("pt-BR")
+    (r.st||"").replace(/;/g," "), r.origin||"", fmtBR(r.pr), map[r.ps], r.at.toLocaleString("pt-BR")
   ].join(";"));
-  const blob = new Blob(["\uFEFF" + "id;resultado;ciclo;aprovado_por;promessa;situacao_promessa;bipado_em\n" + lines.join("\n")], {type:"text/csv;charset=utf-8"});
+  const blob = new Blob(["\uFEFF" + "id;resultado;status;origem;promessa;situacao_promessa;bipado_em\n" + lines.join("\n")], {type:"text/csv;charset=utf-8"});
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
   a.download = `conferencia-goleiro-${todayISO()}.csv`; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 3000);
 };
-["#optSound","#ciclosOk","#optAutoSync","#url","#shRot","#shBase","#cId","#cPr","#cSt"]
+
+/* ---------- histórico compartilhado (Firebase Realtime Database) ---------- */
+function fbUrl(){ let u = ($("#fbUrl").value || "").trim(); if(!u) return ""; if(!u.endsWith("/")) u += "/"; return u; }
+async function fbRecord(rec){
+  const base = fbUrl(); if(!base) return;
+  const path = `${base}eventos/${todayISO()}/${encodeURIComponent(rec.id)}.json`;
+  try{
+    const existing = await fetch(path).then(r => r.ok ? r.json() : null).catch(() => null);
+    if(existing) return;                                   // outro posto já registrou esse ID hoje
+    await fetch(path, {method:"PUT", headers:{"Content-Type":"application/json"}, body: JSON.stringify(rec)});
+  }catch(e){ /* segue funcionando offline mesmo se o banco falhar */ }
+}
+async function fbFetchDay(date){
+  const base = fbUrl(); if(!base) throw new Error("defina a URL do banco em Ajustes");
+  const r = await fetch(`${base}eventos/${date}.json`, {cache:"no-store"});
+  if(!r.ok) throw new Error(`HTTP ${r.status}`);
+  return (await r.json()) || {};
+}
+function summarize(dataObj){
+  const vals = Object.values(dataObj || {});
+  const c = {tot:0, ok:0, no:0, nf:0};
+  vals.forEach(v => { c.tot++; if(c[v.kind] != null) c[v.kind]++; });
+  return c;
+}
+let fbTimer = null;
+function startFbPoll(){
+  clearInterval(fbTimer);
+  const tick = async () => {
+    if(!$("#scan").classList.contains("on")) return;
+    try{
+      const c = summarize(await fbFetchDay(todayISO()));
+      $("#fbStat").textContent = `hoje em todos os postos: ${c.tot} · roteirizados ${c.ok} · não rot. ${c.no}`;
+    }catch(e){ /* mantém o último valor visível na tela */ }
+  };
+  tick();
+  fbTimer = setInterval(tick, 30000);
+}
+$("#btnHist").onclick = async () => {
+  const d = ($("#histDate").value || todayISO()).trim();
+  $("#histErr").classList.remove("on");
+  $("#histStat").innerHTML = '<div><b class="mono">…</b><span>buscando</span></div>';
+  try{
+    const data = await fbFetchDay(d);
+    const c = summarize(data);
+    $("#histStat").innerHTML = `<div><b class="mono">${c.tot}</b><span>bipados</span></div>
+      <div><b class="mono">${c.ok}</b><span>roteirizados</span></div>
+      <div><b class="mono">${c.no}</b><span>não rot.</span></div>
+      <div><b class="mono">${c.nf}</b><span>fora da base</span></div>`;
+    window._histData = data; window._histDate = d;
+  }catch(e){
+    $("#histStat").innerHTML = "";
+    $("#histErr").textContent = e.message; $("#histErr").classList.add("on");
+  }
+};
+$("#btnHistCsv").onclick = () => {
+  if(!window._histData){ flashMsg("busque um dia antes de exportar"); return; }
+  const map = {today:"hoje", late:"vencida", future:"futura", none:"sem promessa"};
+  const lines = Object.entries(window._histData).map(([id, r]) => [
+    id, r.kind === "ok" ? "ROTEIRIZADO" : r.kind === "nf" ? "FORA DA BASE" : "NAO ROTEIRIZADO",
+    (r.st||"").replace(/;/g," "), r.origin||"", fmtBR(r.pr||""), map[promiseState(r.pr||"")] || "",
+    r.at ? new Date(r.at).toLocaleString("pt-BR") : ""
+  ].join(";"));
+  const blob = new Blob(["\uFEFF" + "id;resultado;status;origem;promessa;situacao_promessa;bipado_em\n" + lines.join("\n")], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+  a.download = `conferencia-goleiro-${window._histDate}.csv`; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+};
+
+["#optSound","#optAutoSync","#url","#shRot","#shAm","#shPm","#fbUrl"]
   .forEach(s => $(s).addEventListener("change", cacheSave));
 updateKPI();
 </script>
