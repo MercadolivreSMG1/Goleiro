@@ -206,9 +206,10 @@ details summary{color:var(--mute);font-size:12.5px;cursor:pointer}
 
   <div class="card">
     <h2>Planilha</h2>
-    <div class="line"><div class="dot" id="dRot"></div><div class="nm">roteirizados</div><div class="st" id="sRot">—</div></div>
-    <div class="line"><div class="dot" id="dAm"></div><div class="nm">Pcts Totais AM</div><div class="st" id="sAm">—</div></div>
-    <div class="line"><div class="dot" id="dPm"></div><div class="nm">Pcts Totais PM</div><div class="st" id="sPm">—</div></div>
+    <div class="line"><div class="dot" id="dRotAM"></div><div class="nm">Roteirizados AM</div><div class="st" id="sRotAM">—</div></div>
+    <div class="line"><div class="dot" id="dTotAM"></div><div class="nm">Pcts Totais AM</div><div class="st" id="sTotAM">—</div></div>
+    <div class="line"><div class="dot" id="dRotPM"></div><div class="nm">Roteirizados PM</div><div class="st" id="sRotPM">—</div></div>
+    <div class="line"><div class="dot" id="dTotPM"></div><div class="nm">Pcts Totais PM</div><div class="st" id="sTotPM">—</div></div>
     <div class="row"><button class="btn wide primary" id="btnSync">Sincronizar agora</button></div>
     <div class="err" id="errBox"></div>
   </div>
@@ -225,9 +226,10 @@ details summary{color:var(--mute);font-size:12.5px;cursor:pointer}
       <p class="hint" style="margin-top:10px">Colunas reconhecidas pelo cabeçalho de cada aba, a cada sincronização.</p>
       <input type="text" id="url" spellcheck="false">
       <div class="map">
-        <div><label>Aba roteirizados</label><input type="text" id="shRot" value="roteirizados"></div>
-        <div><label>Aba totais AM</label><input type="text" id="shAm" value="Pcts Totais AM"></div>
-        <div><label>Aba totais PM</label><input type="text" id="shPm" value="Pcts Totais PM"></div>
+        <div><label>Roteirizados AM</label><input type="text" id="shRotAM" value="Roteirizados AM"></div>
+        <div><label>Totais AM</label><input type="text" id="shTotAM" value="Pcts Totais AM"></div>
+        <div><label>Roteirizados PM</label><input type="text" id="shRotPM" value="Roteirizados PM"></div>
+        <div><label>Totais PM</label><input type="text" id="shTotPM" value="Pcts Totais PM"></div>
       </div>
       <div class="line" style="margin-top:10px"><div class="nm">colunas em uso</div><div class="st" id="detected">—</div></div>
       <label style="display:block;font-size:11px;color:var(--mute);margin:12px 0 4px">Banco do histórico (Firebase)</label>
@@ -267,7 +269,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 
 let CYCLE = "AM";
-let ROT = new Map();                              // id -> ciclo da rota (AM1, PM1…)
+let ROT = {AM: new Set(), PM: new Set()};        // ids roteirizados de cada ciclo
 let TOT = {AM: new Map(), PM: new Map()};        // id -> {pr, st}
 let SCANNED = new Map();
 let counts = {tot:0, ok:0, no:0, nf:0};
@@ -339,13 +341,14 @@ function findCols(rows){
   return {id, pr, st};
 }
 async function loadSheet(id, sheet){
-  const c = findCols(await fetchCsv(id, sheet, "select * limit 4"));
+  const probe = await fetchCsv(id, sheet, "select * limit 4");
+  const c = findCols(probe);
   if(c.id < 0) throw new Error("não achei a coluna de ID");
   const cols = [c.id, c.pr, c.st].filter(i => i >= 0);
   const rows = await fetchCsv(id, sheet, "select " + cols.map(LT).join(","));
   let k = 0;
   const ix = {id: k++, pr: c.pr >= 0 ? k++ : -1, st: c.st >= 0 ? k++ : -1};
-  return {rows: rows.slice(1), ix, label: `${sheet}: ID ${LT(c.id)}${c.pr >= 0 ? " · promessa " + LT(c.pr) : ""}${c.st >= 0 ? " · " + (rows[0][ix.st]||"status") + " " + LT(c.st) : ""}`};
+  return {rows: rows.slice(1), ix, sig: JSON.stringify(probe) + "#" + rows.length, label: `${sheet}: ID ${LT(c.id)}${c.pr >= 0 ? " · promessa " + LT(c.pr) : ""}${c.st >= 0 ? " · " + (rows[0][ix.st]||"status") + " " + LT(c.st) : ""}`};
 }
 
 function setLine(key, state, txt){ $("#d"+key).className = "dot " + state; $("#s"+key).textContent = txt; }
@@ -355,35 +358,46 @@ function showErr(m){
   b.innerHTML = `<b>Falha ao ler a planilha:</b> ${m}<br>Confira se ela continua compartilhada como “qualquer pessoa com o link” e se os nomes das abas batem.`;
   b.classList.add("on");
 }
+const SHEETS = [
+  {key:"RotAM", cyc:"AM", kind:"rot", sel:"#shRotAM", def:"Roteirizados AM"},
+  {key:"TotAM", cyc:"AM", kind:"tot", sel:"#shTotAM", def:"Pcts Totais AM"},
+  {key:"RotPM", cyc:"PM", kind:"rot", sel:"#shRotPM", def:"Roteirizados PM"},
+  {key:"TotPM", cyc:"PM", kind:"tot", sel:"#shTotPM", def:"Pcts Totais PM"}
+];
 async function sync(silent){
   if(syncing) return false;
   syncing = true;
   const id = sheetId($("#url").value || SHEET_URL);
-  if(!silent){ showErr(null); ["Rot","Am","Pm"].forEach(k => setLine(k, "load", "buscando…")); }
-  if(!ROT.size) $("#sync").textContent = "sincronizando…";
-  const problems = [], labels = [];
+  if(!silent){ showErr(null); SHEETS.forEach(j => setLine(j.key, "load", "buscando…")); }
+  if(!ROT.AM.size && !ROT.PM.size) $("#sync").textContent = "sincronizando…";
+  const problems = [], labels = [], sigs = {};
 
-  try{
-    const {rows, ix, label} = await loadSheet(id, $("#shRot").value.trim() || "roteirizados");
-    const m = new Map();
-    for(const r of rows){ const v = norm(r[ix.id]); if(isShip(v)) m.set(v, ix.st >= 0 ? String(r[ix.st]||"").trim().toUpperCase() : ""); }
-    if(!m.size) throw new Error("nenhum ID lido");
-    ROT = m; labels.push(label);
-    const am = countRot("AM"), pm = countRot("PM");
-    setLine("Rot", "ok", `${m.size} IDs · AM ${am} · PM ${pm}`);
-  }catch(e){ problems.push(`roteirizados: ${e.message}`); setLine("Rot", "err", "falhou"); }
-
-  for(const [cyc, key, sel, def] of [["AM","Am","#shAm","Pcts Totais AM"],["PM","Pm","#shPm","Pcts Totais PM"]]){
+  for(const j of SHEETS){
+    const name = $(j.sel).value.trim() || j.def;
     try{
-      const {rows, ix, label} = await loadSheet(id, $(sel).value.trim() || def);
-      const m = new Map();
-      for(const r of rows){
-        const v = norm(r[ix.id]); if(!isShip(v)) continue;
-        m.set(v, {pr: ix.pr >= 0 ? lastDate(r[ix.pr]) : "", st: ix.st >= 0 ? String(r[ix.st]||"").trim() : ""});
+      const {rows, ix, label, sig} = await loadSheet(id, name);
+      /* o Google devolve a 1ª aba quando o nome não existe — duas abas iguais = nome errado */
+      const twin = Object.entries(sigs).find(([n, x]) => x === sig);
+      if(twin) throw new Error(`veio igual à aba "${twin[0]}" — o nome provavelmente não existe na planilha`);
+      sigs[name] = sig;
+      if(j.kind === "rot"){
+        const set = new Set();
+        for(const r of rows){ const v = norm(r[ix.id]); if(isShip(v)) set.add(v); }
+        if(!set.size) throw new Error("nenhum ID lido");
+        ROT[j.cyc] = set;
+        setLine(j.key, "ok", `${set.size.toLocaleString("pt-BR")} IDs`);
+      }else{
+        const m = new Map();
+        for(const r of rows){
+          const v = norm(r[ix.id]); if(!isShip(v)) continue;
+          m.set(v, {pr: ix.pr >= 0 ? lastDate(r[ix.pr]) : "", st: ix.st >= 0 ? String(r[ix.st]||"").trim() : ""});
+        }
+        if(!m.size) throw new Error("nenhum ID lido");
+        TOT[j.cyc] = m;
+        setLine(j.key, "ok", `${m.size.toLocaleString("pt-BR")} IDs`);
       }
-      TOT[cyc] = m; labels.push(label);
-      setLine(key, "ok", `${m.size} IDs`);
-    }catch(e){ problems.push(`${def}: ${e.message}`); setLine(key, "err", "falhou"); }
+      labels.push(label);
+    }catch(e){ problems.push(`${name}: ${e.message}`); setLine(j.key, "err", "falhou"); }
   }
 
   $("#detected").textContent = labels.length ? labels.join("  |  ") : "—";
@@ -395,17 +409,17 @@ async function sync(silent){
   syncing = false;
   return !problems.length;
 }
-function countRot(cyc){ let n = 0; for(const c of ROT.values()) if(!c || c.startsWith(cyc)) n++; return n; }
+const countRot = cyc => ROT[cyc].size;
 function paintSync(){
   $("#sync").textContent = lastSync
     ? `base ${lastSync.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}`
-    : (ROT.size ? "base em cache" : "sem base");
+    : (ROT.AM.size || ROT.PM.size ? "base em cache" : "sem base");
 }
 function idleScreen(){
   if(SCANNED.size) return;
   $("#verdict").className = "";
   $("#vLabel").textContent = "Bipe o pacote";
-  $("#vId").textContent = ROT.size ? `${countRot(CYCLE).toLocaleString("pt-BR")} roteirizados no ${CYCLE}` : "Carregando base…";
+  $("#vId").textContent = (ROT.AM.size || ROT.PM.size) ? `${countRot(CYCLE).toLocaleString("pt-BR")} roteirizados no ${CYCLE}` : "Carregando base…";
   $("#vMeta").innerHTML = ""; $("#vPromise").innerHTML = ""; $("#alert").classList.remove("on");
 }
 
@@ -429,21 +443,23 @@ const store = {
   async set(k,v){ try{ if(window.storage) return await window.storage.set(k,v); }catch(e){} try{ localStorage.setItem(k,v); }catch(e){} },
   async get(k){ try{ if(window.storage){ const r = await window.storage.get(k); return r?r.value:null; } }catch(e){} try{ return localStorage.getItem(k); }catch(e){ return null; } }
 };
-const packRot = m => [...m.entries()].map(([k,v]) => `${k}|${v}`).join("\n");
-const unpackRot = s => { const m = new Map(); if(s) for(const l of s.split("\n")){ const p = l.split("|"); if(p[0]) m.set(p[0], p[1]||""); } return m; };
+const packSet = x => [...x].join("\n");
+const unpackSet = x => new Set(x ? x.split("\n").filter(Boolean) : []);
 const packTot = m => [...m.entries()].map(([k,v]) => `${k}|${v.pr}|${v.st}`).join("\n");
 const unpackTot = s => { const m = new Map(); if(s) for(const l of s.split("\n")){ const p = l.split("|"); if(p[0]) m.set(p[0], {pr:p[1]||"", st:p[2]||""}); } return m; };
 let cacheTimer = null;
 function cacheSave(){
   clearTimeout(cacheTimer);
   cacheTimer = setTimeout(() => {
-    store.set("goleiro6:cfg", JSON.stringify({
-      url:$("#url").value, shRot:$("#shRot").value, shAm:$("#shAm").value, shPm:$("#shPm").value, fb:$("#fbUrl").value,
+    store.set("goleiro7:cfg", JSON.stringify({
+      url:$("#url").value, fb:$("#fbUrl").value,
+      sh: SHEETS.map(j => $(j.sel).value),
       snd:$("#optSound").checked, asy:$("#optAutoSync").checked, cyc:CYCLE
     }));
-    store.set("goleiro6:rot", packRot(ROT));
-    store.set("goleiro6:am", packTot(TOT.AM));
-    store.set("goleiro6:pm", packTot(TOT.PM));
+    store.set("goleiro7:rotam", packSet(ROT.AM));
+    store.set("goleiro7:rotpm", packSet(ROT.PM));
+    store.set("goleiro7:am", packTot(TOT.AM));
+    store.set("goleiro7:pm", packTot(TOT.PM));
   }, 500);
 }
 
@@ -510,15 +526,13 @@ $("#typeIn").addEventListener("keydown", e => { if(e.key === "Enter"){ e.prevent
 
 /* ---------- regra de validação ---------- */
 function evaluate(id){
-  const rc = ROT.has(id) ? ROT.get(id) : null;              // ciclo da rota, se roteirizado
-  const routed = rc !== null && (!rc || rc.startsWith(CYCLE));
-  const otherRoute = rc !== null && !routed ? rc : "";       // roteirizado, mas em outro ciclo
   const other = CYCLE === "AM" ? "PM" : "AM";
-  const b = TOT[CYCLE].get(id) || TOT[other].get(id) || null;
-  const origin = TOT[CYCLE].has(id) ? CYCLE : (TOT[other].has(id) ? other : "");
+  const routed = ROT[CYCLE].has(id);
+  const otherRoute = !routed && ROT[other].has(id) ? other : "";   // só informativo
+  const b = TOT[CYCLE].get(id) || null;
   const pr = b ? b.pr : "", st = b ? b.st : "";
-  const kind = routed ? "ok" : (b || otherRoute ? "no" : "nf");
-  return {id, kind, dup: SCANNED.has(id), routed, otherRoute, pr, st, origin, ps: promiseState(pr), at: new Date()};
+  const kind = routed ? "ok" : (b ? "no" : "nf");
+  return {id, kind, dup: SCANNED.has(id), routed, otherRoute, pr, st, origin: b ? CYCLE : "", ps: promiseState(pr), at: new Date()};
 }
 function render(r){
   if(!r.dup){
@@ -735,16 +749,14 @@ function ask(t, x, fn){ $("#mTitle").textContent=t; $("#mText").textContent=x; p
 $("#mNo").onclick = () => { $("#modal").classList.remove("on"); pending=null; };
 $("#mYes").onclick = () => { $("#modal").classList.remove("on"); if(pending) pending(); pending=null; };
 $("#btnClear").onclick = () => ask("Zerar contagem", "Apaga as leituras desta tela. O que já foi bipado continua salvo no histórico.", resetSession);
-["#optSound","#optAutoSync","#url","#shRot","#shAm","#shPm","#fbUrl"].forEach(s => $(s).addEventListener("change", cacheSave));
+["#optSound","#optAutoSync","#url","#fbUrl","#shRotAM","#shTotAM","#shRotPM","#shTotPM"].forEach(s => $(s).addEventListener("change", cacheSave));
 
 /* ---------- início ---------- */
 (async function boot(){
   try{
-    const c = JSON.parse(await store.get("goleiro6:cfg") || "{}");
+    const c = JSON.parse(await store.get("goleiro7:cfg") || "{}");
     if(c.url) $("#url").value = c.url;
-    if(c.shRot) $("#shRot").value = c.shRot;
-    if(c.shAm) $("#shAm").value = c.shAm;
-    if(c.shPm) $("#shPm").value = c.shPm;
+    if(Array.isArray(c.sh)) SHEETS.forEach((j, i) => { if(c.sh[i]) $(j.sel).value = c.sh[i]; });
     if(c.fb) $("#fbUrl").value = c.fb;
     if(c.snd === false) $("#optSound").checked = false;
     if(c.asy === false) $("#optAutoSync").checked = false;
@@ -752,9 +764,9 @@ $("#btnClear").onclick = () => ask("Zerar contagem", "Apaga as leituras desta te
   }catch(e){}
   if(!$("#url").value) $("#url").value = SHEET_URL;
   paintCycle();
-  const [r, am, pm] = await Promise.all([store.get("goleiro6:rot"), store.get("goleiro6:am"), store.get("goleiro6:pm")]);
-  ROT = unpackRot(r); TOT.AM = unpackTot(am); TOT.PM = unpackTot(pm);
-  if(ROT.size){ idleScreen(); paintSync(); }
+  const [ra, rp, am, pm] = await Promise.all(["rotam","rotpm","am","pm"].map(k => store.get("goleiro7:" + k)));
+  ROT.AM = unpackSet(ra); ROT.PM = unpackSet(rp); TOT.AM = unpackTot(am); TOT.PM = unpackTot(pm);
+  if(ROT.AM.size || ROT.PM.size){ idleScreen(); paintSync(); }
   startFbPoll();
   await sync(true);
   startAutoSync();
